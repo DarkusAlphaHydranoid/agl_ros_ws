@@ -25,6 +25,7 @@ RDEPENDS:${PN} += " \
     python3-pyyaml \
     python3-six \
     python3-pydantic \
+    python3-pydantic-core \
     python3-rich-click \
 "
 

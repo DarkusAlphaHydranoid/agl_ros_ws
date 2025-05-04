@@ -13,11 +13,11 @@ S = "${WORKDIR}/git"
 FILES:${PN} += "${datadir}/ignition/ignition-cmake2/*"
 inherit cmake
 
-FILES:${PN}-dev += " \
-    pkgconfig/ignition-cmake2.pc \
-    ${includedir} \
-    ${datadir}/cmake/ignition-cmake2/cmake2/ \
-    ${datadir}/ignition/ignition-cmake2/ \
-"
+# FILES:${PN}-dev += " \
+#     pkgconfig/ignition-cmake2.pc \
+#     ${includedir} \
+#     ${datadir}/cmake/ignition-cmake2/cmake2/ \
+#     ${datadir}/ignition/ignition-cmake2/ \
+# "
 
 BBCLASSEXTEND = "native nativesdk"

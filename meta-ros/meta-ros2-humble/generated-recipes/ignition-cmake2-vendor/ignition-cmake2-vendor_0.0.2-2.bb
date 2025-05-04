@@ -24,7 +24,7 @@ ROS_BUILD_DEPENDS = " \
 
 ROS_BUILDTOOL_DEPENDS = " \
     ament-cmake-test-native \
-    cmake-native \
+    ament-cmake-native \
     doxygen-native \
     git-native \
 "
@@ -59,6 +59,6 @@ SRC_URI = "git://github.com/ros2-gbp/ignition_cmake2_vendor-release;${ROS_BRANCH
 SRCREV = "18bf27798d4be2ba4a85e9e9fb129681e4e7af2b"
 S = "${WORKDIR}/git"
 
-ROS_BUILD_TYPE = "cmake"
+ROS_BUILD_TYPE = "ament_cmake"
 
 inherit ros_${ROS_BUILD_TYPE}
