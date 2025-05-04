@@ -1,0 +1,240 @@
+From 8d08ab1372ede05e1c9dabdd242fd4bb1e0be414 Mon Sep 17 00:00:00 2001
+From: Scott Murray <scott.murray@konsulko.com>
+Date: Tue, 21 Sep 2021 15:52:18 -0400
+Subject: [PATCH 3/4] Add support for TI WL1837
+
+This patch adds description of TI WL1837 and links interfaces
+to communicate with the IC.
+
+Signed-off-by: ito.yoshiki001 <ito.yoshiki001@jp.panasonic.com>
+
+Reworked:
+- WL1837 specific devicetree configuration moved to the board
+  specific r8a77951-agl-refhw.dts from agl-refhw-common.dtsi.
+- Switched to HCI_LL driver for BT support to match other upstream
+  users and prepare for btwilink driver going away (dropped in 5.5
+  upstream).
+- WLAN_PWR_EN enabling moved to GPIO initialization to work around
+  BT initialization problems.
+- Update sound configuration to enable WL1837 BT audio, and disable
+  the HDMI1 audio left over from the original Salvator-X devicetree.
+  The latter is clean up, as HDMI1 as defined uses a SSI that
+  conflicts with the ak4613 configuration.
+- Updated for kernel 5.10 in BSP v5.5.0.
+
+Signed-off-by: Scott Murray <scott.murray@konsulko.com>
+---
+ .../boot/dts/renesas/agl-refhw-common.dtsi    | 37 +++++---
+ .../boot/dts/renesas/r8a77951-agl-refhw.dts   | 84 +++++++++++++++----
+ 2 files changed, 94 insertions(+), 27 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi b/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
+index 7474ed578c21..3ae835a1ff13 100644
+--- a/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
++++ b/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
+@@ -183,6 +183,18 @@ vccq_sdhi3: regulator-vccq-sdhi3 {
+ 			  1800000 0>;
+ 	};
+ 
++	wlan_en: regulator-wlan_en {
++		compatible = "regulator-fixed";
++
++		regulator-name = "wlan-en-regulator";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++
++		gpio = <&gpio7 2 GPIO_ACTIVE_HIGH>;
++		startup-delay-us = <70000>;
++		enable-active-high;
++	};
++
+ 	hdmi0-out {
+ 		compatible = "hdmi-connector";
+ 		label = "HDMI0 OUT";
+@@ -673,7 +685,8 @@ sdhi3_pins_uhs: sd3_uhs {
+ 	};
+ 
+ 	sound_pins: sound {
+-		groups = "ssi349_ctrl", "ssi3_data", "ssi4_data";
++		groups = "ssi349_ctrl", "ssi3_data", "ssi4_data",
++			 "ssi78_ctrl", "ssi7_data", "ssi8_data";
+ 		function = "ssi";
+ 	};
+ 
+@@ -828,24 +841,28 @@ &sdhi2 {
+ };
+ 
+ &sdhi3 {
++	/* Default WLAN card configuration */
+ 	pinctrl-0 = <&sdhi3_pins>;
+-	pinctrl-1 = <&sdhi3_pins_uhs>;
+-	pinctrl-names = "default", "state_uhs";
++	pinctrl-names = "default";
+ 
+-	vmmc-supply = <&vcc_sdhi3>;
+-	vqmmc-supply = <&vccq_sdhi3>;
+-	cd-gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
+-	wp-gpios = <&gpio4 16 GPIO_ACTIVE_HIGH>;
++	vmmc-supply = <&wlan_en>;
+ 	bus-width = <4>;
+-	sd-uhs-sdr50;
+-	sd-uhs-sdr104;
+-	status = "okay";
++	no-1-8-v;
++	non-removable;
++	cap-power-off-card;
++	keep-power-in-suspend;
++
++	/* leave disabled by default */
+ };
+ 
+ &ssi4 {
+ 	shared-pin;
+ };
+ 
++&ssi8 {
++	shared-pin;
++};
++
+ &usb_extal_clk {
+ 	clock-frequency = <50000000>;
+ };
+diff --git a/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts b/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
+index 3d1107f6d9cc..24ba2c5c4b88 100644
+--- a/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
++++ b/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
+@@ -119,6 +119,23 @@ adv7123_out: endpoint {
+ 		};
+ 	};
+ 
++	sound_wl18xx {
++		compatible = "audio-graph-card";
++		label = "wl18xx";
++
++		dais = <&rsnd_port2>;
++	};
++
++	wl18xx_pcm {
++		compatible = "ti,wl18xx-pcm";
++		status = "okay";
++
++		port {
++			wl18xx_endpoint: endpoint {
++				remote-endpoint = <&rsnd_for_wl18xx>;
++			};
++		};
++	};
+ };
+ 
+ &adsp {
+@@ -155,8 +172,14 @@ &hsusb3 {
+ 
+ &sound_card {
+ 	dais = <&rsnd_port0	/* ak4613 */
+-		&rsnd_port1	/* HDMI0  */
+-		&rsnd_port2>;	/* HDMI1  */
++		&rsnd_port1>;	/* HDMI0  */
++};
++
++&hscif0 {
++	bluetooth {
++		compatible = "ti,wl1837-st";
++		enable-gpios = <&gpio7 3 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ &hdmi0 {
+@@ -192,12 +215,6 @@ rcar_dw_hdmi1_out: endpoint {
+ 				remote-endpoint = <&hdmi1_con>;
+ 			};
+ 		};
+-		port@2 {
+-			reg = <2>;
+-			dw_hdmi1_snd_in: endpoint {
+-				remote-endpoint = <&rsnd_endpoint2>;
+-			};
+-		};
+ 	};
+ };
+ 
+@@ -215,8 +232,11 @@ &ohci3 {
+ };
+ 
+ &rcar_sound {
++	/* Multi DAI */
++	#sound-dai-cells = <1>;
++
+ 	ports {
+-		/* rsnd_port0 is on salvator-common */
++		/* rsnd_port0 is in agl-refhw-common */
+ 		rsnd_port1: port@1 {
+ 			reg = <1>;
+ 			rsnd_endpoint1: endpoint {
+@@ -231,14 +251,15 @@ rsnd_endpoint1: endpoint {
+ 		};
+ 		rsnd_port2: port@2 {
+ 			reg = <2>;
+-			rsnd_endpoint2: endpoint {
+-				remote-endpoint = <&dw_hdmi1_snd_in>;
++			rsnd_for_wl18xx: endpoint {
++				remote-endpoint = <&wl18xx_endpoint>;
+ 
+-				dai-format = "i2s";
+-				bitclock-master = <&rsnd_endpoint2>;
+-				frame-master = <&rsnd_endpoint2>;
++				simple-audio-card,format = "i2s";
++				bitclock-master = <&wl18xx_endpoint>;
++				frame-master = <&wl18xx_endpoint>;
+ 
+-				playback = <&ssi3>;
++				playback = <&ssi7>;
++				capture = <&ssi8>;
+ 			};
+ 		};
+ 	};
+@@ -373,11 +394,40 @@ &sdhi0 {
+ };
+ 
+ &sdhi3 {
+-	/delete-property/ wp-gpios;
+-	non-removable;
++	status = "okay";
++
++	max-frequency = <50000000>;
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	wlcore: wlcore@2 {
++		compatible = "ti,wl1837";
++		reg = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
++	};
+ };
+ 
+ &gpio6 {
++	/*
++	 * Enable WLAN_PWR_EN right from boot to get reliable BT
++	 * initialization, as doing it at SDHI initialization
++	 * does not seem to do so, no matter how much BT_EN is
++	 * delayed.
++	 *
++	 * This is perhaps not ideal per the requirements described
++	 * in the "Level Shifting WL18xx/WL18xxMOD/WL18xxQ I/Os"
++	 * document (SWRA448A)[1], but the BT UART seems unusable
++	 * otherwise.
++	 *
++	 * [1] https://www.ti.com/lit/an/swra448a/swra448a.pdf
++	 */
++	wlan-pwr-en {
++		gpio-hog;
++		gpios = <9 GPIO_ACTIVE_HIGH>;
++		output-high;
++	};
++
+ 	/* Enable the CAN 1 & 2 transceivers */
+ 	can-1-transceiver-stb {
+ 		gpio-hog;
+-- 
+2.31.1
+

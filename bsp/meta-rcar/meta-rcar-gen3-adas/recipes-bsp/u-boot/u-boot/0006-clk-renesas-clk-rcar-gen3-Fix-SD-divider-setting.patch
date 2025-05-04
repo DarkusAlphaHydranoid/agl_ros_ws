@@ -1,0 +1,49 @@
+From f4bab069e402ae2be66001aefa2a3ccbd0301209 Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Mon, 7 Dec 2020 20:00:45 +0300
+Subject: [PATCH 05/19] clk: renesas: clk-rcar-gen3: Fix SD divider setting
+
+This backports kernel commit ee87a8797d62dda7 ("clk: renesas: rcar-gen3:
+Fix SD divider setting")
+
+This patch fixed the SD divider settiing for corresponding to the change
+in the HS200/HS400 mode.
+
+NOTE:
+- In H3/M3, the clock in HS400 mode refers to SDnH clock
+  (others are SDn clock). Therefore, only the division value of SD is set
+  as struct sd_div_table.div of cpg_sd_div_table[].
+- In M3N, HS400 mode and HS200 mode use the same clock setting.
+
+Signed-off-by: Takeshi Kihara <takeshi.kihara.df@renesas.com>
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ drivers/clk/renesas/clk-rcar-gen3.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/clk/renesas/clk-rcar-gen3.c b/drivers/clk/renesas/clk-rcar-gen3.c
+index f26fafd..2f14659 100644
+--- a/drivers/clk/renesas/clk-rcar-gen3.c
++++ b/drivers/clk/renesas/clk-rcar-gen3.c
+@@ -68,16 +68,16 @@
+  */
+ static const struct cpg_sd_div_table cpg_sd_div_table[] = {
+ /*	CPG_SD_DIV_TABLE_DATA(stp_hck,  stp_ck,   sd_srcfc,   sd_fc,  sd_div) */
++	CPG_SD_DIV_TABLE_DATA(0,        0,        1,          0,        2),
+ 	CPG_SD_DIV_TABLE_DATA(0,        0,        0,          1,        4),
+ 	CPG_SD_DIV_TABLE_DATA(0,        0,        1,          1,        8),
+ 	CPG_SD_DIV_TABLE_DATA(1,        0,        2,          1,       16),
+ 	CPG_SD_DIV_TABLE_DATA(1,        0,        3,          1,       32),
+-	CPG_SD_DIV_TABLE_DATA(1,        0,        4,          1,       64),
+ 	CPG_SD_DIV_TABLE_DATA(0,        0,        0,          0,        2),
+-	CPG_SD_DIV_TABLE_DATA(0,        0,        1,          0,        4),
+ 	CPG_SD_DIV_TABLE_DATA(1,        0,        2,          0,        8),
+ 	CPG_SD_DIV_TABLE_DATA(1,        0,        3,          0,       16),
+ 	CPG_SD_DIV_TABLE_DATA(1,        0,        4,          0,       32),
++	CPG_SD_DIV_TABLE_DATA(1,        0,        4,          1,       64),
+ };
+ 
+ static int gen3_clk_get_parent(struct gen3_clk_priv *priv, struct clk *clk,
+-- 
+2.7.4
+

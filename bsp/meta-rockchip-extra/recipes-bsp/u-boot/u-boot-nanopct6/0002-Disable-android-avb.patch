@@ -1,0 +1,26 @@
+From 686fada4a19de15fa1832db37b2dfd8b3430715d Mon Sep 17 00:00:00 2001
+From: Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+Date: Tue, 23 Jul 2024 08:19:21 +0900
+Subject: [PATCH 2/2] Disable android avb
+
+Signed-off-by: Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+---
+ configs/nanopi6_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configs/nanopi6_defconfig b/configs/nanopi6_defconfig
+index 3faf6b501f..4da528d1a9 100644
+--- a/configs/nanopi6_defconfig
++++ b/configs/nanopi6_defconfig
+@@ -33,7 +33,7 @@ CONFIG_BOOTDELAY=1
+ CONFIG_SYS_CONSOLE_INFO_QUIET=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ CONFIG_ANDROID_BOOTLOADER=y
+-CONFIG_ANDROID_AVB=y
++# CONFIG_ANDROID_AVB is not set
+ CONFIG_ANDROID_BOOT_IMAGE_HASH=y
+ CONFIG_BOARD_RNG_SEED=y
+ CONFIG_SPL_BOARD_INIT=y
+-- 
+2.25.1
+

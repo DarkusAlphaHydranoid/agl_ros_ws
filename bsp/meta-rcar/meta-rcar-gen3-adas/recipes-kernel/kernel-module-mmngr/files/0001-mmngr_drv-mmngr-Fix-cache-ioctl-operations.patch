@@ -1,0 +1,37 @@
+From 4b78b0d6958c748d67df65162ad25c43b503da05 Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Thu, 5 Aug 2021 20:34:25 +0300
+Subject: [PATCH] mmngr_drv: mmngr: Fix cache ioctl operations
+
+Use DMA_TO_DEVICE direction for MM_IOC_FLUSH ioctl, and
+DMA_FROM_DEVICE direction for MM_IOC_INVAL operation.
+Otherwise, MM_IOC_INVAL is a NOP, while MM_IOC_FLUSH
+invalidates the cache instead of cleaning it.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ mmngr_drv/mmngr/mmngr-module/files/mmngr/drv/mmngr_drv.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mmngr_drv/mmngr/mmngr-module/files/mmngr/drv/mmngr_drv.c b/mmngr_drv/mmngr/mmngr-module/files/mmngr/drv/mmngr_drv.c
+index 3843da1..5d23b66 100644
+--- a/mmngr_drv/mmngr/mmngr-module/files/mmngr/drv/mmngr_drv.c
++++ b/mmngr_drv/mmngr/mmngr-module/files/mmngr/drv/mmngr_drv.c
+@@ -961,12 +961,12 @@ static long ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case MM_IOC_FLUSH:
+ 		cachep = (struct MM_CACHE_PARAM *)arg;
+ 		dma_sync_single_for_device(mm_dev, p->hard_addr + cachep->offset,
+-					   cachep->len, DMA_FROM_DEVICE);
++					   cachep->len, DMA_TO_DEVICE);
+ 		break;
+ 	case MM_IOC_INVAL:
+ 		cachep = (struct MM_CACHE_PARAM *)arg;
+ 		dma_sync_single_for_cpu(mm_dev, p->hard_addr + cachep->offset,
+-					cachep->len, DMA_TO_DEVICE);
++					cachep->len, DMA_FROM_DEVICE);
+ 		break;
+ 	default:
+ 		pr_err("%s MMD CMD EFAULT\n", __func__);
+-- 
+2.7.4
+

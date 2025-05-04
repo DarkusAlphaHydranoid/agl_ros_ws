@@ -1,0 +1,1330 @@
+From 957fea399db9cddbc9dbe86c2ae00d193ce057e9 Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Fri, 30 Apr 2021 16:04:18 +0300
+Subject: [PATCH 60/74] arm64: dts: renesas: Add ulcb-kf dtso files
+
+Add missing ulcb-kf dtso files here.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ .../boot/dts/renesas/ulcb-kf-cn10-gmsl2.dtso  | 234 ++++++++++++++
+ .../boot/dts/renesas/ulcb-kf-cn10-pca.dtso    |  74 +++++
+ .../boot/dts/renesas/ulcb-kf-cn11-gmsl2.dtso  | 297 ++++++++++++++++++
+ .../boot/dts/renesas/ulcb-kf-cn11-pca.dtso    |  74 +++++
+ arch/arm64/boot/dts/renesas/ulcb-kf-cn11.dtso | 276 ++++++++++++++++
+ arch/arm64/boot/dts/renesas/ulcb-kf-most.dtso |  30 ++
+ ...-kf-panel-koe-tx31d200vm0baa-1280x480.dtso |  60 ++++
+ ...f-panel-mitsubishi-aa104xd12-1024x768.dtso |  61 ++++
+ ...f-panel-mitsubishi-aa121td01-1280x800.dtso |  60 ++++
+ arch/arm64/boot/dts/renesas/ulcb-kf-sd3.dtso  |  70 +++++
+ 10 files changed, 1236 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-cn10-gmsl2.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-cn10-pca.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-cn11-gmsl2.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-cn11-pca.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-cn11.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-most.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-panel-koe-tx31d200vm0baa-1280x480.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa104xd12-1024x768.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa121td01-1280x800.dtso
+ create mode 100644 arch/arm64/boot/dts/renesas/ulcb-kf-sd3.dtso
+
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-gmsl2.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-gmsl2.dtso
+new file mode 100644
+index 000000000000..44f9b78da41e
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-gmsl2.dtso
+@@ -0,0 +1,234 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3ULCB Kingfisher board:
++ *  use GMSL2 card on CN10
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "camera.dtsi"
++
++/ {
++	fragment@101 {
++		target-path = "/";
++
++		__overlay__ {
++
++			cs2300_ref_clk: cs2300_ref_clk {
++				compatible = "fixed-clock";
++				#clock-cells = <0>;
++				clock-frequency = <25000000>;
++			};
++
++			iio_hwmon_a: hwmon_a@0 {
++				compatible = "iio-hwmon";
++				io-channels = <&max2008x_a 0>, <&max2008x_a 2>, /* current */
++					      <&max2008x_a 4>, <&max2008x_a 6>, /* voltage */
++					      <&max2008x_a 8>, <&max2008x_a 9>; /* misc voltages */
++				io-channel-names = "camera-A-0-Iout", "camera-A-1-Iout",
++						   "camera-A-0-Vout", "camera-A-1-Vout",
++						   "cameras-A-Vregulator", "cameras-A-3v3";
++			};
++		};
++	};
++};
++
++&csi40 {
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			csi40_in: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&deser_out0>;
++			};
++		};
++	};
++};
++
++&i2cswitch4_i2c1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	/* in uboot type:
++	 *  fdt rm /soc/i2c@e66d8000/i2c-switch@71/i2c@1/deser@2c
++	 */
++	deser@29 {
++		compatible = "maxim,max96712", "maxim,max9296";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x29 0x48>;
++		reg-names = "max96712", "max9296";
++		regs = <0x0c 0x0d 0x0e 0x0f>;
++		clocks = <&cs2300_a>;
++		clock-names = "ref_clk";
++		shutdown-gpios = <&gpio_exp_a_5c 13 GPIO_ACTIVE_LOW>;
++
++		poc0-supply = <&vdd_cam_a_0>;
++		poc1-supply = <&vdd_cam_a_1>;
++		poc2-supply = <&vdd_cam_a_2>;
++		poc3-supply = <&vdd_cam_a_3>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				deser_in0: endpoint {
++					remote-endpoint = <&camera_out0>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++				deser_in1: endpoint {
++					remote-endpoint = <&camera_out1>;
++				};
++			};
++
++			port@2 {
++				reg = <2>;
++				deser_in2: endpoint {
++					remote-endpoint = <&camera_out2>;
++				};
++			};
++
++			port@3 {
++				reg = <3>;
++				deser_in3: endpoint {
++					remote-endpoint = <&camera_out3>;
++				};
++			};
++
++			port@4 {
++				reg = <4>;
++				deser_out0: endpoint {
++					clock-lanes = <0>;
++					data-lanes = <1 2 3 4>;
++					remote-endpoint = <&csi40_in>;
++				};
++			};
++		};
++
++		i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			camera@60 {
++				compatible = LVDS_CAMERA;
++				reg = <0x60 0x0c>;
++
++				port {
++					camera_out0: endpoint {
++						remote-endpoint = <&deser_in0>;
++					};
++				};
++			};
++		};
++
++		i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			camera@61 {
++				compatible = LVDS_CAMERA;
++				reg = <0x61 0x0d>;
++
++				port {
++					camera_out1: endpoint {
++						remote-endpoint = <&deser_in1>;
++					};
++				};
++			};
++		};
++
++		i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++
++			camera@62 {
++				compatible = LVDS_CAMERA;
++				reg = <0x62 0x0e>;
++
++				port {
++					camera_out2: endpoint {
++						remote-endpoint = <&deser_in2>;
++					};
++				};
++			};
++		};
++
++		i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			camera@63 {
++				compatible = LVDS_CAMERA;
++				reg = <0x63 0x0f>;
++
++				port {
++					camera_out3: endpoint {
++						remote-endpoint = <&deser_in3>;
++					};
++				};
++			};
++		};
++	};
++};
++
++&i2cswitch4_i2c7 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	cs2300_a: clk_multiplier_a@4e {
++		#clock-cells = <0>;
++		compatible = "cirrus,cs2300-cp";
++		reg = <0x4e>;
++		clocks = <&cs2300_ref_clk>;
++		clock-names = "clk_in";
++		assigned-clocks = <&cs2300_a>;
++		assigned-clock-rates = <25000000>;
++	};
++
++	max2008x_a: vcam_switch_a@28 {
++		compatible = "maxim,max2008x";
++		reg = <0x28>;
++		#io-channel-cells = <1>;
++
++		regulators {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			vdd_cam_a_0: SW0 {
++				reg = <0>;
++				regulator-name = "Camera-A-0";
++			};
++			vdd_cam_a_3: SW1 {
++				reg = <1>;
++				regulator-name = "Camera-A-3";
++			};
++			vdd_cam_a_1: SW2 {
++				reg = <2>;
++				regulator-name = "Camera-A-1";
++			};
++			vdd_cam_a_2: SW3 {
++				reg = <3>;
++				regulator-name = "Camera-A-2";
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-pca.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-pca.dtso
+new file mode 100644
+index 000000000000..cd290787b82f
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-cn10-pca.dtso
+@@ -0,0 +1,74 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3ULCB Kingfisher board:
++ *  use CN11 instead default CN29/CN48
++ *  use deprecated card with PCA9535 expander
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++&vdd_cam_a_0 {
++	gpio = <&gpio_exp_a_26 13 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_a_1 {
++	gpio = <&gpio_exp_a_26 12 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_a_2 {
++	gpio = <&gpio_exp_a_26 15 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_a_3 {
++	gpio = <&gpio_exp_a_26 14 GPIO_ACTIVE_HIGH>;
++};
++
++&i2cswitch4_i2c7 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	/* PCA9535 is a redundant/deprecated card */
++	gpio_exp_a_26: gpio@26 {
++		compatible = "nxp,pca9535";
++		reg = <0x26>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		video_a_des_cfg1 {
++			gpio-hog;
++			gpios = <5 GPIO_ACTIVE_HIGH>;
++			input;
++			line-name = "Video-A cfg1";
++		};
++		video_a_des_cfg0 {
++			gpio-hog;
++			gpios = <6 GPIO_ACTIVE_HIGH>;
++			input;
++			line-name = "Video-A cfg0";
++		};
++		video_a_pwr_shdn {
++			gpio-hog;
++			gpios = <3 GPIO_ACTIVE_HIGH>;
++			output-high;
++			line-name = "Video-A PWR_SHDN";
++		};
++		video_a_des_shdn {
++			gpio-hog;
++			gpios = <4 GPIO_ACTIVE_HIGH>;
++			output-high;
++			line-name = "Video-A DES_SHDN";
++		};
++		video_a_des_led {
++			gpio-hog;
++			gpios = <7 GPIO_ACTIVE_HIGH>;
++			output-low;
++			line-name = "Video-A led";
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-gmsl2.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-gmsl2.dtso
+new file mode 100644
+index 000000000000..85aff7f579f2
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-gmsl2.dtso
+@@ -0,0 +1,297 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3ULCB Kingfisher board:
++ *  use CN11 instead default CN29/CN48
++ *  use GMSL2 card on CN11
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "camera.dtsi"
++
++/ {
++	fragment@101 {
++		target-path = "/";
++
++		__overlay__ {
++
++			cs2300_ref_clk: cs2300_ref_clk {
++				compatible = "fixed-clock";
++				#clock-cells = <0>;
++				clock-frequency = <25000000>;
++			};
++
++			iio_hwmon_b: hwmon_b@0 {
++				compatible = "iio-hwmon";
++				io-channels = <&max2008x_b 0>, <&max2008x_b 2>, /* current */
++					      <&max2008x_b 4>, <&max2008x_b 6>, /* voltage */
++					      <&max2008x_b 8>, <&max2008x_b 9>; /* misc voltages */
++				io-channel-names = "camera-B-0-Iout", "camera-B-1-Iout",
++						   "camera-B-0-Vout", "camera-B-1-Vout",
++						   "cameras-B-Vregulator", "cameras-B-3v3";
++			};
++		};
++	};
++};
++
++&csi41 {
++	status = "okay";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			csi41_in: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&deser_out1>;
++			};
++		};
++	};
++};
++
++&i2cswitch4 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	/* Slot B (CN11) */
++	i2c@2 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <2>;
++
++		deser_b@29 {
++			compatible = "maxim,max96712", "maxim,max9296";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x29 0x48>;
++			reg-names = "max96712", "max9296";
++			regs = <0x0c 0x0d 0x0e 0x0f>;
++			clocks = <&cs2300_b>;
++			clock-names = "ref_clk";
++			shutdown-gpios = <&gpio_exp_b_5c 13 GPIO_ACTIVE_LOW>;
++
++			poc0-supply = <&vdd_cam_b_0>;
++			poc1-supply = <&vdd_cam_b_1>;
++			poc2-supply = <&vdd_cam_b_2>;
++			poc3-supply = <&vdd_cam_b_3>;
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++					deser_in4: endpoint {
++						remote-endpoint = <&camera_out4>;
++					};
++				};
++
++				port@1 {
++					reg = <1>;
++					deser_in5: endpoint {
++						remote-endpoint = <&camera_out5>;
++					};
++				};
++
++				port@2 {
++					reg = <2>;
++					deser_in6: endpoint {
++						remote-endpoint = <&camera_out6>;
++					};
++				};
++
++				port@3 {
++					reg = <3>;
++					deser_in7: endpoint {
++						remote-endpoint = <&camera_out7>;
++					};
++				};
++
++				port@4 {
++					reg = <4>;
++					deser_out1: endpoint {
++						clock-lanes = <0>;
++						data-lanes = <1 2 3 4>;
++						remote-endpoint = <&csi41_in>;
++					};
++				};
++			};
++
++			i2c@0 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <0>;
++
++				camera@60 {
++					compatible = LVDS_CAMERA;
++					reg = <0x60 0x0c>;
++
++					port {
++						camera_out4: endpoint {
++							remote-endpoint = <&deser_in4>;
++						};
++					};
++				};
++			};
++
++			i2c@1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <1>;
++
++				camera@61 {
++					compatible = LVDS_CAMERA;
++					reg = <0x61 0x0d>;
++
++					port {
++						camera_out5: endpoint {
++							remote-endpoint = <&deser_in5>;
++						};
++					};
++				};
++			};
++
++			i2c@2 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <2>;
++
++				camera@62 {
++					compatible = LVDS_CAMERA;
++					reg = <0x62 0x0e>;
++
++					port {
++						camera_out6: endpoint {
++							remote-endpoint = <&deser_in6>;
++						};
++					};
++				};
++			};
++
++			i2c@3 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <3>;
++
++				camera@63 {
++					compatible = LVDS_CAMERA;
++					reg = <0x63 0x0f>;
++
++					port {
++						camera_out7: endpoint {
++							remote-endpoint = <&deser_in7>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	i2cswitch4_i2c6: i2c@6 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <6>;
++		/* Slot B (CN11) */
++
++		gpio_exp_b_5c: gpio@5c {
++			compatible = "maxim,max7325";
++			reg = <0x5c>;
++			gpio-controller;
++			#gpio-cells = <2>;
++
++			video_b_des_cfg2 {
++				gpio-hog;
++				gpios = <4 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg2";
++			};
++			video_b_des_cfg1 {
++				gpio-hog;
++				gpios = <6 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg1";
++			};
++			video_b_des_cfg0 {
++				gpio-hog;
++				gpios = <7 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg0";
++			};
++			video_b_pwr_shdn {
++				gpio-hog;
++				gpios = <14 GPIO_ACTIVE_HIGH>;
++				output-high;
++				line-name = "Video-B PWR_SHDN";
++			};
++			video_b_led {
++				gpio-hog;
++				gpios = <12 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "Video-B LED";
++			};
++		};
++
++		cs2300_b: clk_multiplier_b@4e {
++			#clock-cells = <0>;
++			compatible = "cirrus,cs2300-cp";
++			reg = <0x4e>;
++			clocks = <&cs2300_ref_clk>;
++			clock-names = "clk_in";
++			assigned-clocks = <&cs2300_b>;
++			assigned-clock-rates = <25000000>;
++		};
++
++		max2008x_b: vcam_switch_b@28 {
++			compatible = "maxim,max2008x";
++			reg = <0x28>;
++			#io-channel-cells = <1>;
++
++			regulators {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				vdd_cam_b_0: SW0 {
++					reg = <0>;
++					regulator-name = "Camera-B-0";
++				};
++				vdd_cam_b_3: SW1 {
++					reg = <1>;
++					regulator-name = "Camera-B-3";
++				};
++				vdd_cam_b_1: SW2 {
++					reg = <2>;
++					regulator-name = "Camera-B-1";
++				};
++				vdd_cam_b_2: SW3 {
++					reg = <3>;
++					regulator-name = "Camera-B-2";
++				};
++			};
++		};
++	};
++};
++
++&vin4 {
++	status = "okay";
++};
++
++&vin5 {
++	status = "okay";
++};
++
++&vin6 {
++	status = "okay";
++};
++
++&vin7 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-pca.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-pca.dtso
+new file mode 100644
+index 000000000000..429a152add2e
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11-pca.dtso
+@@ -0,0 +1,74 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3ULCB Kingfisher board:
++ *  use CN11 instead default CN29/CN48
++ *  use deprecated card with PCA9535
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++&vdd_cam_b_0 {
++	gpio = <&gpio_exp_b_27 13 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_b_1 {
++	gpio = <&gpio_exp_b_27 12 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_b_2 {
++	gpio = <&gpio_exp_b_27 15 GPIO_ACTIVE_HIGH>;
++};
++
++&vdd_cam_b_3 {
++	gpio = <&gpio_exp_b_27 14 GPIO_ACTIVE_HIGH>;
++};
++
++&i2cswitch4_i2c6 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	/* PCA9535 is a redundant/deprecated card */
++	gpio_exp_b_27: gpio@27 {
++		compatible = "nxp,pca9535";
++		reg = <0x27>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		video_b_des_cfg1 {
++			gpio-hog;
++			gpios = <5 GPIO_ACTIVE_HIGH>;
++			input;
++			line-name = "Video-B cfg1";
++		};
++		video_b_des_cfg0 {
++			gpio-hog;
++			gpios = <6 GPIO_ACTIVE_HIGH>;
++			input;
++			line-name = "Video-B cfg0";
++		};
++		video_b_pwr_shdn {
++			gpio-hog;
++			gpios = <3 GPIO_ACTIVE_HIGH>;
++			output-high;
++			line-name = "Video-B PWR_SHDN";
++		};
++		video_b_des_shdn {
++			gpio-hog;
++			gpios = <4 GPIO_ACTIVE_HIGH>;
++			output-high;
++			line-name = "Video-B DES_SHDN";
++		};
++		video_b_des_led {
++			gpio-hog;
++			gpios = <7 GPIO_ACTIVE_HIGH>;
++			output-low;
++			line-name = "Video-B led";
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-cn11.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11.dtso
+new file mode 100644
+index 000000000000..98198c7c2a01
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-cn11.dtso
+@@ -0,0 +1,276 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3ULCB Kingfisher board:
++ *  use CN11 instead default CN29/CN48
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include "camera.dtsi"
++
++/ {
++	fragment@101 {
++		target-path = "/";
++
++		__overlay__ {
++
++			vdd_cam_b_0: regulator@18 {
++				compatible = "regulator-fixed";
++				regulator-name = "Video-B PWR0";
++				regulator-min-microvolt = <12000000>;
++				regulator-max-microvolt = <12000000>;
++				gpio = <&gpio_exp_b_5c 9 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++			};
++
++			vdd_cam_b_1: regulator@19 {
++				compatible = "regulator-fixed";
++				regulator-name = "Video-B PWR1";
++				regulator-min-microvolt = <12000000>;
++				regulator-max-microvolt = <12000000>;
++				gpio = <&gpio_exp_b_5c 8 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++			};
++
++			vdd_cam_b_2: regulator@20 {
++				compatible = "regulator-fixed";
++				regulator-name = "Video-B PWR2";
++				regulator-min-microvolt = <12000000>;
++				regulator-max-microvolt = <12000000>;
++				gpio = <&gpio_exp_b_5c 11 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++			};
++
++			vdd_cam_b_3: regulator@21 {
++				compatible = "regulator-fixed";
++				regulator-name = "Video-B PWR3";
++				regulator-min-microvolt = <12000000>;
++				regulator-max-microvolt = <12000000>;
++				gpio = <&gpio_exp_b_5c 10 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++			};
++		};
++	};
++};
++
++&csi41 {
++	status = "okay";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			csi41_in: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&deser_out1>;
++			};
++		};
++	};
++};
++
++&i2cswitch4 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	/* Slot B (CN11) */
++	i2c@2 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <2>;
++
++		deser_b@2c {
++			compatible = "maxim,max9286", "ti,ub9x4";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x2c 0x3a>;
++			reg-names = "max9286", "ub9x4";
++			regs = <0x0c 0x0d 0x0e 0x0f>;
++			shutdown-gpios = <&gpio_exp_b_5c 13 GPIO_ACTIVE_LOW>;
++
++			poc0-supply = <&vdd_cam_b_0>;
++			poc1-supply = <&vdd_cam_b_1>;
++			poc2-supply = <&vdd_cam_b_2>;
++			poc3-supply = <&vdd_cam_b_3>;
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++					deser_in4: endpoint {
++						remote-endpoint = <&camera_out4>;
++					};
++				};
++
++				port@1 {
++					reg = <1>;
++					deser_in5: endpoint {
++						remote-endpoint = <&camera_out5>;
++					};
++				};
++
++				port@2 {
++					reg = <2>;
++					deser_in6: endpoint {
++						remote-endpoint = <&camera_out6>;
++					};
++				};
++
++				port@3 {
++					reg = <3>;
++					deser_in7: endpoint {
++						remote-endpoint = <&camera_out7>;
++					};
++				};
++
++				port@4 {
++					reg = <4>;
++					deser_out1: endpoint {
++						clock-lanes = <0>;
++						data-lanes = <1 2 3 4>;
++						remote-endpoint = <&csi41_in>;
++					};
++				};
++			};
++
++			i2c@0 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <0>;
++
++				camera@60 {
++					compatible = LVDS_CAMERA;
++					reg = <0x60 0x0c>;
++
++					port {
++						camera_out4: endpoint {
++							remote-endpoint = <&deser_in4>;
++						};
++					};
++				};
++			};
++
++			i2c@1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <1>;
++
++				camera@61 {
++					compatible = LVDS_CAMERA;
++					reg = <0x61 0x0d>;
++
++					port {
++						camera_out5: endpoint {
++							remote-endpoint = <&deser_in5>;
++						};
++					};
++				};
++			};
++
++			i2c@2 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <2>;
++
++				camera@62 {
++					compatible = LVDS_CAMERA;
++					reg = <0x62 0x0e>;
++
++					port {
++						camera_out6: endpoint {
++							remote-endpoint = <&deser_in6>;
++						};
++					};
++				};
++			};
++
++			i2c@3 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				reg = <3>;
++
++				camera@63 {
++					compatible = LVDS_CAMERA;
++					reg = <0x63 0x0f>;
++
++					port {
++						camera_out7: endpoint {
++							remote-endpoint = <&deser_in7>;
++						};
++					};
++				};
++			};
++		};
++	};
++
++	i2cswitch4_i2c6: i2c@6 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <6>;
++		/* Slot B (CN11) */
++
++		gpio_exp_b_5c: gpio@5c {
++			compatible = "maxim,max7325";
++			reg = <0x5c>;
++			gpio-controller;
++			#gpio-cells = <2>;
++
++			video_b_des_cfg2 {
++				gpio-hog;
++				gpios = <4 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg2";
++			};
++			video_b_des_cfg1 {
++				gpio-hog;
++				gpios = <6 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg1";
++			};
++			video_b_des_cfg0 {
++				gpio-hog;
++				gpios = <7 GPIO_ACTIVE_HIGH>;
++				input;
++				line-name = "Video-B cfg0";
++			};
++			video_b_pwr_shdn {
++				gpio-hog;
++				gpios = <14 GPIO_ACTIVE_HIGH>;
++				output-high;
++				line-name = "Video-B PWR_SHDN";
++			};
++			video_b_led {
++				gpio-hog;
++				gpios = <12 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "Video-B LED";
++			};
++		};
++	};
++};
++
++&vin4 {
++	status = "okay";
++};
++
++&vin5 {
++	status = "okay";
++};
++
++&vin6 {
++	status = "okay";
++};
++
++&vin7 {
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-most.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-most.dtso
+new file mode 100644
+index 000000000000..21ceff051cd0
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-most.dtso
+@@ -0,0 +1,30 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3/M3ULCB Kingfisher board:
++ *  this overrides GPS in favour MOST on GP5_24/GP5_25 R-CAR pins
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++&pfc {
++	mlp_pins: mlp {
++		groups = "mlb_3pin";
++		function = "mlb_3pin";
++	};
++};
++
++&scif1 {
++	status = "disabled";
++};
++
++&mlp {
++	pinctrl-0 = <&mlp_pins>;
++	pinctrl-names = "default";
++	status = "okay";
++
++	microchip,clock-speed = "1024fs";
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-panel-koe-tx31d200vm0baa-1280x480.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-koe-tx31d200vm0baa-1280x480.dtso
+new file mode 100644
+index 000000000000..722714e78330
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-koe-tx31d200vm0baa-1280x480.dtso
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Source for the Kingfisher (ULCB extension) LVDS panel
++ *
++ * Copyright (C) 2018-2020 Renesas Electronics Corp.
++ * Copyright (C) 2018-2020 Cogent Embedded, Inc.
++ */
++
++#include <dt-bindings/gpio/gpio.h>
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	fragment@0 {
++		target = <&lvds>;
++
++		__overlay__ {
++			compatible = "panel-lvds";
++
++			width-mm = <291>;
++			height-mm = <109>;
++
++			data-mapping = "jeida-24";
++
++			panel-timing {
++				/* 1280x480 @60Hz KOE TX31D200VM0BAA compatible panel */
++				clock-frequency = <43200000>;
++				hactive = <1280>;
++				vactive = <480>;
++				hsync-len = <20>;
++				hfront-porch = <20>;
++				hback-porch = <40>;
++				vsync-len = <15>;
++				vfront-porch = <15>;
++				vback-porch = <20>;
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio2>;
++
++		__overlay__ {
++			gpio@2 {
++				gpio-hog;
++				gpios = <2 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "Scan Direction Normal";
++			};
++
++			gpio@3 {
++				gpio-hog;
++				gpios = <3 GPIO_ACTIVE_HIGH>;
++				output-high;
++				line-name = "BL PWM 100%";
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa104xd12-1024x768.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa104xd12-1024x768.dtso
+new file mode 100644
+index 000000000000..02b1c11cdaca
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa104xd12-1024x768.dtso
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Source for the Kingfisher (ULCB extension) LVDS panel
++ *
++ * Copyright (C) 2018-2020 Renesas Electronics Corp.
++ * Copyright (C) 2018-2020 Cogent Embedded, Inc.
++ */
++
++#include <dt-bindings/gpio/gpio.h>
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	fragment@0 {
++		target = <&lvds>;
++
++		__overlay__ {
++			compatible = "panel-lvds";
++
++			width-mm = <210>;
++			height-mm = <158>;
++
++			data-mapping = "jeida-24";
++
++			panel-timing {
++				/* 1024x768 @60Hz Mitsubishi AA104XD12 compatible panel */
++				clock-frequency = <65000000>;
++				hactive = <1024>;
++				vactive = <768>;
++				hsync-len = <136>;
++				hfront-porch = <20>;
++				hback-porch = <160>;
++				vfront-porch = <3>;
++				vback-porch = <29>;
++				vsync-len = <6>;
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio2>;
++
++		__overlay__ {
++			gpio@2 {
++				gpio-hog;
++				gpios = <2 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "LVDS ISP 6-Bit Compatibility Mode";
++			};
++
++			gpio@3 {
++				gpio-hog;
++				gpios = <3 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "LVDS Scan Direction Normal";
++			};
++		};
++	};
++};
++
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa121td01-1280x800.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa121td01-1280x800.dtso
+new file mode 100644
+index 000000000000..1e328e3cf096
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-panel-mitsubishi-aa121td01-1280x800.dtso
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Source for the Kingfisher (ULCB extension) LVDS panel
++ *
++ * Copyright (C) 2018-2020 Renesas Electronics Corp.
++ * Copyright (C) 2018-2020 Cogent Embedded, Inc.
++ */
++
++#include <dt-bindings/gpio/gpio.h>
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	fragment@0 {
++		target = <&lvds>;
++
++		__overlay__ {
++			compatible = "panel-lvds";
++
++			width-mm = <261>;
++			height-mm = <163>;
++
++			data-mapping = "jeida-24";
++
++			panel-timing {
++				/* 1280x800 @60Hz Mitsubishi AA121TD01 compatible panel */
++				clock-frequency = <71000000>;
++				hactive = <1280>;
++				vactive = <800>;
++				hsync-len = <70>;
++				hfront-porch = <20>;
++				hback-porch = <70>;
++				vsync-len = <5>;
++				vfront-porch = <3>;
++				vback-porch = <15>;
++			};
++		};
++	};
++
++	fragment@1 {
++		target = <&gpio2>;
++
++		__overlay__ {
++			gpio@2 {
++				gpio-hog;
++				gpios = <2 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "LVDS ISP 6-Bit Compatibility Mode";
++			};
++
++			gpio@3 {
++				gpio-hog;
++				gpios = <3 GPIO_ACTIVE_HIGH>;
++				output-low;
++				line-name = "LVDS Scan Direction Normal";
++			};
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf-sd3.dtso b/arch/arm64/boot/dts/renesas/ulcb-kf-sd3.dtso
+new file mode 100644
+index 000000000000..6bc6b83ceaa0
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf-sd3.dtso
+@@ -0,0 +1,70 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Overlay for the H3/M3ULCB Kingfisher board:
++ *  this overrides WIFI in favour SD on SDHI3
++ *
++ * Copyright (C) 2017-2020 Renesas Electronics Corp.
++ * Copyright (C) 2017-2020 Cogent Embedded, Inc.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	fragment@101 {
++		target-path = "/";
++
++		__overlay__ {
++
++			vcc_sdhi3: regulator-vcc-sdhi3 {
++				compatible = "regulator-fixed";
++
++				regulator-name = "SDHI3 Vcc";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++
++				gpio = <&gpio4 17 GPIO_ACTIVE_HIGH>;
++				enable-active-high;
++			};
++
++			vccq_sdhi3: regulator-vccq-sdhi3 {
++				compatible = "regulator-gpio";
++				regulator-name = "SDHI3 VccQ";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++
++				gpios = <&gpio3 14 GPIO_ACTIVE_HIGH>;
++				gpios-states = <1>;
++				states = <3300000 1
++					  1800000 0>;
++			};
++		};
++	};
++};
++
++&sd_wifi_mux {
++	enable-active-high;	/* Connect SD */
++};
++
++&sdhi3 {
++	/* in uboot type:
++	 *  fdt rm /soc/sd@ee160000 no-1-8-v
++	 *  fdt rm /soc/sd@ee160000 non-removable;
++	 *  fdt rm /soc/sd@ee160000 cap-power-off-card;
++	 *  fdt rm /soc/sd@ee160000 keep-power-in-suspend;
++	 *  fdt rm /soc/sd@ee160000 max-frequency;
++	 */
++
++	vmmc-supply = <&vcc_sdhi3>;
++	vqmmc-supply = <&vccq_sdhi3>;
++	cd-gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio4 16 GPIO_ACTIVE_HIGH>;
++//	sd-uhs-sdr50;
++//	sd-uhs-sdr104;
++};
++
++&wlcore {
++	status = "disabled";
++};
+-- 
+2.25.1
+

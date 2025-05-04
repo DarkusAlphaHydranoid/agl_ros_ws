@@ -1,0 +1,4 @@
+require include/gles-control.inc
+
+PACKAGECONFIG:pn-cairo:append = "${@' egl glesv2' if '${USE_GLES_WAYLAND}' == '1'  else ''}"
+PACKAGECONFIG:pn-cairo:append += "${@bb.utils.contains('DISTRO_FEATURES', 'directfb', 'directfb', '', d)}"

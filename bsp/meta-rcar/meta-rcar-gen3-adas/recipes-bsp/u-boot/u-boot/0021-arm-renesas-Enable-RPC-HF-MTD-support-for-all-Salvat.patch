@@ -1,0 +1,145 @@
+From 07e762135530558c0af0f4d2bb0fea6612eaf8ba Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Mon, 24 May 2021 21:49:14 +0300
+Subject: [PATCH 18/19] arm: renesas: Enable RPC HF MTD support for all
+ Salvator-X boards
+
+This enables RPC HyperFlash MTD support
+for all R-Car Gen3 Salvator-X boards.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ arch/arm/dts/r8a77950-salvator-x-u-boot.dts  | 4 ++++
+ arch/arm/dts/r8a77951-salvator-x-u-boot.dts  | 4 ++++
+ arch/arm/dts/r8a77951-salvator-xs-u-boot.dts | 4 ++++
+ arch/arm/dts/r8a77960-salvator-x-u-boot.dts  | 4 ++++
+ arch/arm/dts/r8a77960-salvator-xs-u-boot.dts | 4 ++++
+ arch/arm/dts/r8a77965-salvator-x-u-boot.dts  | 4 ++++
+ arch/arm/dts/r8a77965-salvator-xs-u-boot.dts | 4 ++++
+ configs/rcar3_salvator-x_defconfig           | 8 ++++++++
+ include/configs/salvator-x.h                 | 8 ++++++++
+ 9 files changed, 44 insertions(+)
+
+diff --git a/arch/arm/dts/r8a77950-salvator-x-u-boot.dts b/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
+index e039e33..b1d3a7c 100644
+--- a/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77951-salvator-x-u-boot.dts b/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
+index 8a08a90..84dda7c 100644
+--- a/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
+index e6f299d..ba6c943 100644
+--- a/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77960-salvator-x-u-boot.dts b/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
+index d3b0924..4c4fc6f 100644
+--- a/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
+index 85e2ac7..037a576 100644
+--- a/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77965-salvator-x-u-boot.dts b/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
+index d6f0708..eea7911 100644
+--- a/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
+@@ -39,3 +39,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
+index c26a903..aff4642 100644
+--- a/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
+@@ -36,3 +36,7 @@
+ &vcc_sdhi3 {
+ 	u-boot,off-on-delay-us = <20000>;
+ };
++
++&rpc {
++	status = "okay";
++};
+diff --git a/configs/rcar3_salvator-x_defconfig b/configs/rcar3_salvator-x_defconfig
+index d81c8ce..1dd70dd 100644
+--- a/configs/rcar3_salvator-x_defconfig
++++ b/configs/rcar3_salvator-x_defconfig
+@@ -53,6 +53,14 @@ CONFIG_MMC_IO_VOLTAGE=y
+ CONFIG_MMC_UHS_SUPPORT=y
+ CONFIG_MMC_HS200_SUPPORT=y
+ CONFIG_RENESAS_SDHI=y
++CONFIG_MTD=y
++CONFIG_DM_MTD=y
++CONFIG_MTD_NOR_FLASH=y
++CONFIG_FLASH_CFI_DRIVER=y
++CONFIG_CFI_FLASH=y
++CONFIG_FLASH_CFI_MTD=y
++CONFIG_SYS_FLASH_CFI=y
++CONFIG_RENESAS_RPC_HF=y
+ CONFIG_BITBANGMII=y
+ CONFIG_PHY_MICREL=y
+ CONFIG_PHY_MICREL_KSZ90X1=y
+diff --git a/include/configs/salvator-x.h b/include/configs/salvator-x.h
+index 240df9c..b9609e2 100644
+--- a/include/configs/salvator-x.h
++++ b/include/configs/salvator-x.h
+@@ -19,4 +19,12 @@
+ 
+ /* Environment in eMMC, at the end of 2nd "boot sector" */
+ 
++#define CONFIG_CFI_FLASH_USE_WEAK_ACCESSORS
++#define CONFIG_FLASH_SHOW_PROGRESS	45
++#define CONFIG_SYS_FLASH_BANKS_LIST	{ 0x08000000 }
++#define CONFIG_SYS_FLASH_CFI_WIDTH	FLASH_CFI_16BIT
++#define CONFIG_SYS_MAX_FLASH_BANKS_DETECT	1
++#define CONFIG_SYS_MAX_FLASH_SECT	256
++#define CONFIG_SYS_WRITE_SWAPPED_DATA
++
+ #endif /* __SALVATOR_X_H */
+-- 
+2.7.4
+

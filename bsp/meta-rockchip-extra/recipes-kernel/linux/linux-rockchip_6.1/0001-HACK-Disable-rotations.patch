@@ -1,0 +1,93 @@
+From d607cb1a2ff7a8794c7a54f9c97ba54cffc190f4 Mon Sep 17 00:00:00 2001
+From: Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+Date: Mon, 27 Jan 2025 00:48:37 +0900
+Subject: [PATCH] HACK: Disable rotations
+
+Signed-off-by: Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+---
+ drivers/gpu/drm/rockchip/rockchip_vop2_reg.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/rockchip/rockchip_vop2_reg.c b/drivers/gpu/drm/rockchip/rockchip_vop2_reg.c
+index 1ac78f575389..1e0c7b884f0c 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_vop2_reg.c
++++ b/drivers/gpu/drm/rockchip/rockchip_vop2_reg.c
+@@ -4180,8 +4180,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .layer_sel_id = { 0, 0, 0, 0 },
+-	  .supported_rotations = DRM_MODE_ROTATE_90 | DRM_MODE_ROTATE_270 |
+-				 DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4208,7 +4207,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .formats = formats_for_cluster,
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+-	  .supported_rotations = DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4233,8 +4232,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .layer_sel_id = { 1, 1, 1, 1 },
+-	  .supported_rotations = DRM_MODE_ROTATE_90 | DRM_MODE_ROTATE_270 |
+-				 DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4261,7 +4259,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .base = 0x80,
+-	  .supported_rotations = DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4288,8 +4286,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .layer_sel_id = { 4, 4, 4, 4 },
+-	  .supported_rotations = DRM_MODE_ROTATE_90 | DRM_MODE_ROTATE_270 |
+-				 DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4315,7 +4312,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .base = 0x80,
+-	  .supported_rotations = DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4341,8 +4338,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .layer_sel_id = { 5, 5, 5, 5 },
+-	  .supported_rotations = DRM_MODE_ROTATE_90 | DRM_MODE_ROTATE_270 |
+-				 DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+@@ -4368,7 +4364,7 @@ static const struct vop2_win_data rk3588_vop_win_data[] = {
+ 	  .nformats = ARRAY_SIZE(formats_for_cluster),
+ 	  .format_modifiers = format_modifiers_afbc,
+ 	  .base = 0x80,
+-	  .supported_rotations = DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
++	  .supported_rotations = 0,
+ 	  .hsu_filter_mode = VOP2_SCALE_UP_BIC,
+ 	  .hsd_filter_mode = VOP2_SCALE_DOWN_BIL,
+ 	  .vsu_filter_mode = VOP2_SCALE_UP_BIL,
+-- 
+2.43.0
+

@@ -1,0 +1,54 @@
+From 81aa1d47389164d129e8179fda42060f465d7c69 Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Wed, 5 May 2021 04:09:30 +0300
+Subject: [PATCH 61/76] arm64: dts: renesas: ulcb-kf: Switch to HCI LL driver
+
+Switch to HCI LL bluetooth and remove btwilink.
+Remove the kim device node as well since it's
+no longer needed once btwilink is removed.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ arch/arm64/boot/dts/renesas/ulcb-kf.dtsi | 19 +++++--------------
+ 1 file changed, 5 insertions(+), 14 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
+index 18867a494f85..0e2d3bd10428 100644
+--- a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
++++ b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
+@@ -130,20 +130,6 @@ vdd_cam_a_3: regulator@17 {
+ 		enable-active-high;
+ 	};
+ 
+-	kim {
+-		compatible = "kim";
+-		shutdown-gpios = <&gpio_exp_74 3 GPIO_ACTIVE_HIGH>;
+-		/* serial1 */
+-		dev_name = "/dev/ttySC1";
+-		flow_cntrl = <1>;
+-		/* int div 8 hscif@26.6666656MHz */
+-		baud_rate = <3333332>;
+-	};
+-
+-	btwilink {
+-		compatible = "btwilink";
+-	};
+-
+ 	/delete-node/sound;
+ 
+ 	sound_card: sound@0 {
+@@ -331,6 +317,11 @@ &hscif0 {
+ 	uart-has-rtscts;
+ 
+ 	status = "okay";
++
++	bluetooth {
++		compatible = "ti,wl1837-st";
++		enable-gpios = <&gpio_exp_74 3 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ &hscif1 {
+-- 
+2.7.4
+

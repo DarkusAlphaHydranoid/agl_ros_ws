@@ -1,0 +1,12 @@
+# Copyright (C) 2020-2022 SanCloud Ltd
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 9
+
+local_conf_header:
+  systemd: |
+    DISTRO_FEATURES_append = " systemd"
+    VIRTUAL-RUNTIME_init_manager = "systemd"
+    DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
+    VIRTUAL-RUNTIME_initscripts = ""

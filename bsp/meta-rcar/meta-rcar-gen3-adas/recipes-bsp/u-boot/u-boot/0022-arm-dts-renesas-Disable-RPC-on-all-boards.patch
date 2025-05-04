@@ -1,0 +1,245 @@
+From 7c43b5250c6f3a7766a04f6be7f909efbffc7edc Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Tue, 26 Nov 2019 21:52:37 +0300
+Subject: [PATCH 19/19] arm: dts: renesas: Disable RPC on all boards
+
+This disables RPC device on all R-Car V3x, Salvator-X, and ULCB boards.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ arch/arm/dts/r8a77950-salvator-x-u-boot.dts  | 2 +-
+ arch/arm/dts/r8a77950-ulcb-u-boot.dts        | 2 +-
+ arch/arm/dts/r8a77951-salvator-x-u-boot.dts  | 2 +-
+ arch/arm/dts/r8a77951-salvator-xs-u-boot.dts | 2 +-
+ arch/arm/dts/r8a77960-salvator-x-u-boot.dts  | 2 +-
+ arch/arm/dts/r8a77960-salvator-xs-u-boot.dts | 2 +-
+ arch/arm/dts/r8a77960-ulcb-u-boot.dts        | 2 +-
+ arch/arm/dts/r8a77965-salvator-x-u-boot.dts  | 2 +-
+ arch/arm/dts/r8a77965-salvator-xs-u-boot.dts | 2 +-
+ arch/arm/dts/r8a77965-ulcb-u-boot.dts        | 2 +-
+ arch/arm/dts/r8a77970-eagle-u-boot.dts       | 4 ++--
+ arch/arm/dts/r8a77970-v3msk-u-boot.dts       | 4 ++--
+ arch/arm/dts/r8a77980-condor-u-boot.dts      | 4 ++--
+ arch/arm/dts/r8a77980-v3hsk-u-boot.dts       | 4 ++--
+ arch/arm/dts/r8a779a0-falcon-u-boot.dts      | 4 ++--
+ 15 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/arch/arm/dts/r8a77950-salvator-x-u-boot.dts b/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
+index b1d3a7c..967fa3b 100644
+--- a/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77950-salvator-x-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77950-ulcb-u-boot.dts b/arch/arm/dts/r8a77950-ulcb-u-boot.dts
+index 4dd4f4e..30897a6 100644
+--- a/arch/arm/dts/r8a77950-ulcb-u-boot.dts
++++ b/arch/arm/dts/r8a77950-ulcb-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77951-salvator-x-u-boot.dts b/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
+index 84dda7c..95a95b2 100644
+--- a/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77951-salvator-x-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
+index ba6c943..cec143f 100644
+--- a/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77951-salvator-xs-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77960-salvator-x-u-boot.dts b/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
+index 4c4fc6f..536df64 100644
+--- a/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77960-salvator-x-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
+index 037a576..25c4330 100644
+--- a/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77960-salvator-xs-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77960-ulcb-u-boot.dts b/arch/arm/dts/r8a77960-ulcb-u-boot.dts
+index 40e0b4a..b97f31c 100644
+--- a/arch/arm/dts/r8a77960-ulcb-u-boot.dts
++++ b/arch/arm/dts/r8a77960-ulcb-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77965-salvator-x-u-boot.dts b/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
+index eea7911..032c905 100644
+--- a/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
++++ b/arch/arm/dts/r8a77965-salvator-x-u-boot.dts
+@@ -41,5 +41,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts b/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
+index aff4642..931336c 100644
+--- a/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
++++ b/arch/arm/dts/r8a77965-salvator-xs-u-boot.dts
+@@ -38,5 +38,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77965-ulcb-u-boot.dts b/arch/arm/dts/r8a77965-ulcb-u-boot.dts
+index b1cddb1..3548f49 100644
+--- a/arch/arm/dts/r8a77965-ulcb-u-boot.dts
++++ b/arch/arm/dts/r8a77965-ulcb-u-boot.dts
+@@ -40,5 +40,5 @@
+ };
+ 
+ &rpc {
+-	status = "okay";
++	status = "disabled";
+ };
+diff --git a/arch/arm/dts/r8a77970-eagle-u-boot.dts b/arch/arm/dts/r8a77970-eagle-u-boot.dts
+index eb868ed..63b9c44 100644
+--- a/arch/arm/dts/r8a77970-eagle-u-boot.dts
++++ b/arch/arm/dts/r8a77970-eagle-u-boot.dts
+@@ -36,7 +36,7 @@
+ 
+ &rpc {
+ 	num-cs = <1>;
+-	status = "okay";
++	status = "disabled";
+ 	spi-max-frequency = <50000000>;
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+@@ -49,6 +49,6 @@
+ 		spi-tx-bus-width = <1>;
+ 		spi-rx-bus-width = <1>;
+ 		reg = <0>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ };
+diff --git a/arch/arm/dts/r8a77970-v3msk-u-boot.dts b/arch/arm/dts/r8a77970-v3msk-u-boot.dts
+index 6ee06d7..5ae02ae 100644
+--- a/arch/arm/dts/r8a77970-v3msk-u-boot.dts
++++ b/arch/arm/dts/r8a77970-v3msk-u-boot.dts
+@@ -47,7 +47,7 @@
+ 
+ &rpc {
+ 	num-cs = <1>;
+-	status = "okay";
++	status = "disabled";
+ 	spi-max-frequency = <50000000>;
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+@@ -60,6 +60,6 @@
+ 		spi-tx-bus-width = <1>;
+ 		spi-rx-bus-width = <1>;
+ 		reg = <0>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ };
+diff --git a/arch/arm/dts/r8a77980-condor-u-boot.dts b/arch/arm/dts/r8a77980-condor-u-boot.dts
+index 1b22c7f..68ebad7 100644
+--- a/arch/arm/dts/r8a77980-condor-u-boot.dts
++++ b/arch/arm/dts/r8a77980-condor-u-boot.dts
+@@ -16,7 +16,7 @@
+ 
+ &rpc {
+ 	num-cs = <1>;
+-	status = "okay";
++	status = "disabled";
+ 	spi-max-frequency = <50000000>;
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+@@ -29,6 +29,6 @@
+ 		spi-tx-bus-width = <1>;
+ 		spi-rx-bus-width = <1>;
+ 		reg = <0>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ };
+diff --git a/arch/arm/dts/r8a77980-v3hsk-u-boot.dts b/arch/arm/dts/r8a77980-v3hsk-u-boot.dts
+index d083df6..4842314 100644
+--- a/arch/arm/dts/r8a77980-v3hsk-u-boot.dts
++++ b/arch/arm/dts/r8a77980-v3hsk-u-boot.dts
+@@ -16,7 +16,7 @@
+ 
+ &rpc {
+ 	num-cs = <1>;
+-	status = "okay";
++	status = "disabled";
+ 	spi-max-frequency = <50000000>;
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+@@ -29,7 +29,7 @@
+ 		spi-tx-bus-width = <1>;
+ 		spi-rx-bus-width = <1>;
+ 		reg = <0>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ };
+ 
+diff --git a/arch/arm/dts/r8a779a0-falcon-u-boot.dts b/arch/arm/dts/r8a779a0-falcon-u-boot.dts
+index 06d3922..7bf9124 100644
+--- a/arch/arm/dts/r8a779a0-falcon-u-boot.dts
++++ b/arch/arm/dts/r8a779a0-falcon-u-boot.dts
+@@ -19,7 +19,7 @@
+ 	#size-cells = <0>;
+ 	num-cs = <1>;
+ 	spi-max-frequency = <50000000>;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	spi-flash@0 {
+ 		reg = <0>;
+@@ -27,6 +27,6 @@
+ 		spi-max-frequency = <50000000>;
+ 		spi-tx-bus-width = <1>;
+ 		spi-rx-bus-width = <1>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ };
+-- 
+2.7.4
+

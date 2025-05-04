@@ -1,0 +1,10 @@
+# Copyright (C) 2020-2022 SanCloud Ltd
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 9
+
+local_conf_header:
+  connman: |
+    CORE_IMAGE_EXTRA_INSTALL += "connman connman-client"
+    PACKAGECONFIG_remove_pn-systemd = "networkd"

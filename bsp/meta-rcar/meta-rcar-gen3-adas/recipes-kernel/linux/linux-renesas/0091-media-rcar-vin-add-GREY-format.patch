@@ -1,0 +1,95 @@
+From 95095e98a1c535506a9db1797de88e31d348ee45 Mon Sep 17 00:00:00 2001
+From: Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Date: Fri, 24 Sep 2021 14:43:17 +0200
+Subject: [PATCH 36/76] media: rcar-vin: add GREY format
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream commit c93beb5243750911a9a95aac31688ff85512b22e.
+
+This adds support for MEDIA_BUS_FMT_Y8_1X8 input and V4L2_PIX_FMT_GREY
+output format.
+
+Signed-off-by: Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Signed-off-by: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ drivers/media/platform/rcar-vin/rcar-dma.c  | 15 +++++++++++++++
+ drivers/media/platform/rcar-vin/rcar-v4l2.c |  4 ++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/drivers/media/platform/rcar-vin/rcar-dma.c b/drivers/media/platform/rcar-vin/rcar-dma.c
+index 66a90ad..ae73767 100644
+--- a/drivers/media/platform/rcar-vin/rcar-dma.c
++++ b/drivers/media/platform/rcar-vin/rcar-dma.c
+@@ -132,6 +132,7 @@
+ /* Video n Data Mode Register bits */
+ #define VNDMR_A8BIT(n)		(((n) & 0xff) << 24)
+ #define VNDMR_A8BIT_MASK	(0xff << 24)
++#define VNDMR_YMODE_Y8		(1 << 12)
+ #define VNDMR_EXRGB		(1 << 8)
+ #define VNDMR_BPSM		(1 << 4)
+ #define VNDMR_ABIT		(1 << 2)
+@@ -746,6 +747,7 @@ static void rvin_crop_scale_comp(struct rvin_dev *vin)
+ 	case V4L2_PIX_FMT_SGBRG8:
+ 	case V4L2_PIX_FMT_SGRBG8:
+ 	case V4L2_PIX_FMT_SRGGB8:
++	case V4L2_PIX_FMT_GREY:
+ 		stride /= 2;
+ 		break;
+ 	default:
+@@ -837,6 +839,7 @@ static int rvin_setup(struct rvin_dev *vin)
+ 	case MEDIA_BUS_FMT_SGBRG8_1X8:
+ 	case MEDIA_BUS_FMT_SGRBG8_1X8:
+ 	case MEDIA_BUS_FMT_SRGGB8_1X8:
++	case MEDIA_BUS_FMT_Y8_1X8:
+ 		vnmc |= VNMC_INF_RAW8;
+ 		break;
+ 	default:
+@@ -916,6 +919,14 @@ static int rvin_setup(struct rvin_dev *vin)
+ 	case V4L2_PIX_FMT_SRGGB8:
+ 		dmr = 0;
+ 		break;
++	case V4L2_PIX_FMT_GREY:
++		if (input_is_yuv) {
++			dmr = VNDMR_DTMD_YCSEP | VNDMR_YMODE_Y8;
++			output_is_yuv = true;
++		} else {
++			dmr = 0;
++		}
++		break;
+ 	default:
+ 		vin_err(vin, "Invalid pixelformat (0x%x)\n",
+ 			vin->format.pixelformat);
+@@ -1370,6 +1381,10 @@ static int rvin_mc_validate_format(struct rvin_dev *vin, struct v4l2_subdev *sd,
+ 		if (vin->format.pixelformat != V4L2_PIX_FMT_SRGGB8)
+ 			return -EPIPE;
+ 		break;
++	case MEDIA_BUS_FMT_Y8_1X8:
++		if (vin->format.pixelformat != V4L2_PIX_FMT_GREY)
++			return -EPIPE;
++		break;
+ 	default:
+ 		return -EPIPE;
+ 	}
+diff --git a/drivers/media/platform/rcar-vin/rcar-v4l2.c b/drivers/media/platform/rcar-vin/rcar-v4l2.c
+index 3cdb43e..832cb89 100644
+--- a/drivers/media/platform/rcar-vin/rcar-v4l2.c
++++ b/drivers/media/platform/rcar-vin/rcar-v4l2.c
+@@ -82,6 +82,10 @@ static const struct rvin_video_format rvin_formats[] = {
+ 		.fourcc			= V4L2_PIX_FMT_SRGGB8,
+ 		.bpp			= 1,
+ 	},
++	{
++		.fourcc			= V4L2_PIX_FMT_GREY,
++		.bpp			= 1,
++	},
+ };
+ 
+ const struct rvin_video_format *rvin_format_from_pixel(struct rvin_dev *vin,
+-- 
+2.7.4
+

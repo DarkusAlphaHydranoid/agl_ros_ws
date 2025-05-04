@@ -1,0 +1,40 @@
+From 4a8db4504ab2c7479cb59670ce7870454f1e4f4d Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Tue, 11 Jan 2022 18:00:26 +0300
+Subject: [PATCH 24/76] Revert "Revert "arm64: dts: renesas: r8a77965: Add RPC
+ device node""
+
+This reverts commit e1ebff2c4b05f44a4270d81cf7b977ee86b8367c.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ arch/arm64/boot/dts/renesas/r8a77965.dtsi | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/renesas/r8a77965.dtsi b/arch/arm64/boot/dts/renesas/r8a77965.dtsi
+index e5f7b9c..283e6f0 100644
+--- a/arch/arm64/boot/dts/renesas/r8a77965.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a77965.dtsi
+@@ -1409,6 +1409,19 @@
+ 			status = "disabled";
+ 		};
+ 
++		rpc0: rpc0@ee200000 {
++			compatible = "renesas,rpc-r8a77965", "renesas,rpc";
++			reg = <0 0xee200000 0 0x1f0>,
++			      <0 0x08000000 0 0x04000000>,
++			      <0 0xee208000 0 0x100>;
++			interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 917>;
++			power-domains = <&sysc R8A77965_PD_ALWAYS_ON>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
+ 		vin0: video@e6ef0000 {
+ 			compatible = "renesas,vin-r8a77965";
+ 			reg = <0 0xe6ef0000 0 0x1000>;
+-- 
+2.7.4
+

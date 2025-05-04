@@ -1,0 +1,11 @@
+# Copyright (C) 2020-2022 SanCloud Ltd
+# SPDX-License-Identifier: MIT
+
+INHERIT += "archiver"
+BB_GENERATE_MIRROR_TARBALLS = "1"
+BB_GENERATE_SHALLOW_TARBALLS = "1"
+BB_GIT_SHALLOW = "1"
+ARCHIVER_MODE[src] = "mirror"
+ARCHIVER_MODE[mirror] = "combined"
+ARCHIVER_MIRROR_EXCLUDE = "file://"
+COPYLEFT_LICENSE_INCLUDE = "*"

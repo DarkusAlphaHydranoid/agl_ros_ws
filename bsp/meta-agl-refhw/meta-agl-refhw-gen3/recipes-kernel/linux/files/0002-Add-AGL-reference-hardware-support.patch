@@ -1,0 +1,1393 @@
+From e8df6330789b106821b9bb59177efa8a191adfda Mon Sep 17 00:00:00 2001
+From: Scott Murray <scott.murray@konsulko.com>
+Date: Tue, 21 Sep 2021 15:45:18 -0400
+Subject: [PATCH 2/4] Add AGL reference hardware support
+
+Upstream-Status: pending
+
+Signed-off-by: Scott Murray <scott.murray@konsulko.com>
+Signed-off-by: Raquel Medina <raquel.medina@konsulko.com>
+[asm330lhh interrupt fix]
+Signed-off-by: Hiroyuki Ishii <ishii.hiroyuki002@jp.panasonic.com>
+---
+ .../boot/dts/renesas/agl-refhw-common.dtsi    | 922 ++++++++++++++++++
+ .../boot/dts/renesas/r8a77951-agl-refhw.dts   | 392 ++++++++
+ drivers/media/i2c/adv748x/adv748x-core.c      |  24 +-
+ 3 files changed, 1337 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
+ create mode 100644 arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
+
+diff --git a/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi b/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
+new file mode 100644
+index 000000000000..3f6f8d86f76d
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/agl-refhw-common.dtsi
+@@ -0,0 +1,922 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Device Tree Source for common parts of AGL Reference Hardware board variants
++ *
++ * Copyright (C) 2015-2017 Renesas Electronics Corp.
++ * Copyright (C) 2020 Konsulko Group
++ */
++
++/*
++ * This file is derived from salvator-common.dtsi
++ *
++ * It is currently unclear if the modifications made are such that they could
++ * be done on top of salvator-common.dtsi to allow removing the duplication.
++ * It is likely that the common pieces with salvator-common.dtsi would need to
++ * be factored out into a new common file, which is perhaps hard to justify.
++ */
++
++/*
++ * SSI-AK4613
++ *
++ * This command is required when Playback/Capture
++ *
++ *	amixer set "DVC Out" 100%
++ *	amixer set "DVC In" 100%
++ *
++ * You can use Mute
++ *
++ *	amixer set "DVC Out Mute" on
++ *	amixer set "DVC In Mute" on
++ *
++ * You can use Volume Ramp
++ *
++ *	amixer set "DVC Out Ramp Up Rate"   "0.125 dB/64 steps"
++ *	amixer set "DVC Out Ramp Down Rate" "0.125 dB/512 steps"
++ *	amixer set "DVC Out Ramp" on
++ *	aplay xxx.wav &
++ *	amixer set "DVC Out"  80%  // Volume Down
++ *	amixer set "DVC Out" 100%  // Volume Up
++ */
++
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	aliases {
++		serial0 = &scif2;
++		serial1 = &scif1;
++		serial2 = &scif5;
++		serial3 = &hscif1;
++		serial4 = &hscif0;
++		serial5 = &hscif2;
++		ethernet0 = &avb;
++		mmc0 = &sdhi2;
++		mmc1 = &sdhi0;
++		mmc2 = &sdhi3;
++	};
++
++	chosen {
++		bootargs = "ignore_loglevel rw root=/dev/nfs ip=dhcp";
++		stdout-path = "serial0:115200n8";
++	};
++
++	audio_clkout: audio-clkout {
++		/*
++		 * This is same as <&rcar_sound 0>
++		 * but needed to avoid cs2000/rcar_sound probe dead-lock
++		 */
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <12288000>;
++	};
++
++	avb-mch@ec5a0100 {
++		compatible = "renesas,avb-mch-gen3";
++		reg =	<0 0xec5a0100 0 0x100>;  /* ADG_AVB */
++		reg-name = "adg_avb";
++
++		clocks = <&cpg CPG_MOD 922>;
++		clock-names = "adg";
++		resets = <&cpg 922>;
++	};
++
++	hdmi0-in {
++		compatible = "hdmi-connector";
++		label = "HDMI0 IN";
++		type = "a";
++
++		port {
++			hdmi_in_con: endpoint {
++				remote-endpoint = <&adv7481_hdmi>;
++			};
++		};
++	};
++
++	hdmi2-in {
++		compatible = "hdmi-connector";
++		label = "HDMI2 IN";
++		type = "a";
++
++		port {
++			hdmi_in_con2: endpoint {
++				remote-endpoint = <&adv7481_hdmi2>;
++			};
++		};
++	};
++
++	reg_1p8v: regulator0 {
++		compatible = "regulator-fixed";
++		regulator-name = "fixed-1.8V";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	reg_3p3v: regulator1 {
++		compatible = "regulator-fixed";
++		regulator-name = "fixed-3.3V";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	reg_12v: regulator2 {
++		compatible = "regulator-fixed";
++		regulator-name = "fixed-12V";
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	sound_card: sound {
++		compatible = "audio-graph-card";
++
++		label = "ak4613";
++
++		dais = <&rsnd_port0>;
++	};
++
++	vcc_sdhi0: regulator-vcc-sdhi0 {
++		compatible = "regulator-fixed";
++
++		regulator-name = "SDHI0 Vcc";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++
++		gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	vccq_sdhi0: regulator-vccq-sdhi0 {
++		compatible = "regulator-gpio";
++
++		regulator-name = "SDHI0 VccQ";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <3300000>;
++
++		gpios = <&gpio5 1 GPIO_ACTIVE_HIGH>;
++		gpios-states = <1>;
++		states = <3300000 1
++			  1800000 0>;
++	};
++
++	vcc_sdhi3: regulator-vcc-sdhi3 {
++		compatible = "regulator-fixed";
++
++		regulator-name = "SDHI3 Vcc";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++
++		gpio = <&gpio3 15 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	vccq_sdhi3: regulator-vccq-sdhi3 {
++		compatible = "regulator-gpio";
++
++		regulator-name = "SDHI3 VccQ";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <3300000>;
++
++		gpios = <&gpio3 14 GPIO_ACTIVE_HIGH>;
++		gpios-states = <1>;
++		states = <3300000 1
++			  1800000 0>;
++	};
++
++	hdmi0-out {
++		compatible = "hdmi-connector";
++		label = "HDMI0 OUT";
++		type = "a";
++
++		port {
++			hdmi0_con: endpoint {
++			};
++		};
++	};
++
++	hdmi1-out {
++		compatible = "hdmi-connector";
++		label = "HDMI1 OUT";
++		type = "a";
++
++		port {
++			hdmi1_con: endpoint {
++			};
++		};
++	};
++
++	x12_clk: x12 {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <24576000>;
++	};
++
++	/* External DU dot clocks */
++	x21_clk: x21-clock {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <33000000>;
++	};
++
++	x22_clk: x22-clock {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <33000000>;
++	};
++
++	x23_clk: x23-clock {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <25000000>;
++	};
++};
++
++&a57_0 {
++	cpu-supply = <&dvfs>;
++};
++
++&audio_clk_a {
++	clock-frequency = <22579200>;
++};
++
++&avb {
++	pinctrl-0 = <&avb_pins>;
++	pinctrl-names = "default";
++	phy-handle = <&phy0>;
++	phy-mode = "rgmii-txid";
++	status = "okay";
++
++	phy0: ethernet-phy@0 {
++		rxc-skew-ps = <1500>;
++		reg = <0>;
++		interrupt-parent = <&gpio2>;
++		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
++		reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
++	};
++};
++
++&csi40 {
++	status = "okay";
++
++	ports {
++		port@0 {
++			reg = <0>;
++
++			csi40_in: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&adv7481_txa>;
++			};
++		};
++	};
++};
++
++&csi41 {
++	status = "okay";
++
++	ports {
++		port@0 {
++			reg = <0>;
++
++			csi41_in: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&adv7481_txa2>;
++			};
++		};
++	};
++};
++
++&du {
++	status = "okay";
++
++};
++
++&ehci0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&extalr_clk {
++	clock-frequency = <32768>;
++};
++
++&hscif0 {
++	pinctrl-0 = <&hscif0_pins>;
++	pinctrl-names = "default";
++	uart-has-rtscts;
++
++	status = "okay";
++};
++
++&hscif1 {
++	pinctrl-0 = <&hscif1_pins>;
++	pinctrl-names = "default";
++
++	/* Please use exclusively to the scif1 node */
++	status = "okay";
++};
++
++&hscif2 {
++	pinctrl-0 = <&hscif2_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&hsusb {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&i2c2 {
++	pinctrl-0 = <&i2c2_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++
++	clock-frequency = <100000>;
++
++	video-receiver@70 {
++		compatible = "adi,adv7481";
++		reg = <0x70 0x26 0x22 0x34 0x36 0x32
++		       0x31 0x30 0x41 0x79 0x4a 0x48>;
++		reg-names = "main", "dpll", "cp", "hdmi", "edid", "repeater",
++			    "infoframe", "cbus", "cec", "sdp", "txa", "txb" ;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		interrupt-parent = <&gpio0>;
++		interrupt-names = "intrq1", "intrq3";
++		interrupts = <4 IRQ_TYPE_LEVEL_LOW>,
++			     <5 IRQ_TYPE_LEVEL_LOW>;
++
++		port@8 {
++			reg = <8>;
++
++			adv7481_hdmi: endpoint {
++				remote-endpoint = <&hdmi_in_con>;
++			};
++		};
++
++		port@a {
++			reg = <10>;
++
++			adv7481_txa: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&csi40_in>;
++			};
++		};
++
++	};
++
++	video-receiver@71 {
++		compatible = "adi,adv7481";
++		reg = <0x71 0x27 0x23 0x35 0x37 0x33
++		       0x28 0x29 0x42 0x78 0x4b 0x49>;
++		reg-names = "main", "dpll", "cp", "hdmi", "edid", "repeater",
++			    "infoframe", "cbus", "cec", "sdp", "txa", "txb" ;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		interrupt-parent = <&gpio6>;
++		interrupt-names = "intrq1", "intrq3";
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>,
++			     <1 IRQ_TYPE_LEVEL_LOW>;
++
++		port@8 {
++			reg = <8>;
++
++			adv7481_hdmi2: endpoint {
++				remote-endpoint = <&hdmi_in_con2>;
++			};
++		};
++
++		port@a {
++			reg = <10>;
++
++			adv7481_txa2: endpoint {
++				clock-lanes = <0>;
++				data-lanes = <1 2 3 4>;
++				remote-endpoint = <&csi41_in>;
++			};
++		};
++	};
++
++	cs2000: clk_multiplier@4f {
++		#clock-cells = <0>;
++		compatible = "cirrus,cs2000-cp";
++		reg = <0x4f>;
++		clocks = <&audio_clkout>, <&x12_clk>;
++		clock-names = "clk_in", "ref_clk";
++
++		assigned-clocks = <&cs2000>;
++		assigned-clock-rates = <24576000>; /* 1/1 divide */
++	};
++};
++
++&i2c3 {
++	pinctrl-0 = <&i2c3_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++
++	clock-frequency = <400000>;
++
++	asm330lhh@6a {
++		compatible = "st,asm330lhh";
++		reg = <0x6a>;
++
++		interrupt-names = "int1", "int2";
++		interrupts-extended = <&gpio6 23 IRQ_TYPE_EDGE_RISING>,
++				      <&gpio2 6 IRQ_TYPE_EDGE_RISING>;
++		st,drdy-int-pin = <1>;
++	};
++};
++
++&i2c4 {
++	status = "okay";
++
++	versaclock5: clock-generator@68 {
++		compatible = "idt,9fgv0841";
++		reg = <0x68>;
++		#clock-cells = <1>;
++		clocks = <&x23_clk>;
++		clock-names = "xin";
++	};
++};
++
++&i2c5 {
++	pinctrl-0 = <&i2c5_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++
++	clock-frequency = <100000>;
++
++	ak4613: codec@10 {
++		compatible = "asahi-kasei,ak4613";
++		#sound-dai-cells = <0>;
++		reg = <0x10>;
++		clocks = <&rcar_sound 3>;
++
++		asahi-kasei,in1-single-end;
++		asahi-kasei,in2-single-end;
++		asahi-kasei,out1-single-end;
++		asahi-kasei,out2-single-end;
++		asahi-kasei,out3-single-end;
++		asahi-kasei,out4-single-end;
++		asahi-kasei,out5-single-end;
++		asahi-kasei,out6-single-end;
++
++		port {
++			ak4613_endpoint: endpoint {
++				remote-endpoint = <&rsnd_endpoint0>;
++			};
++		};
++	};
++};
++
++&i2c_dvfs {
++	status = "okay";
++
++	clock-frequency = <400000>;
++
++	pmic: pmic@30 {
++		pinctrl-0 = <&irq0_pins>;
++		pinctrl-names = "default";
++
++		compatible = "rohm,bd9571mwv";
++		reg = <0x30>;
++		interrupt-parent = <&intc_ex>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		rohm,ddr-backup-power = <0xf>;
++		rohm,rstbmode-level;
++
++		regulators {
++			dvfs: dvfs {
++				regulator-name = "dvfs";
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <1030000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++		};
++	};
++
++	eeprom@50 {
++		compatible = "rohm,br24t01", "atmel,24c01";
++		reg = <0x50>;
++		pagesize = <8>;
++	};
++};
++
++&ohci0 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&ohci1 {
++	status = "okay";
++};
++
++&pcie_bus_clk {
++	clock-frequency = <100000000>;
++	status = "okay";
++};
++
++&pciec0 {
++	status = "okay";
++};
++
++&pciec1 {
++	status = "okay";
++};
++
++&canfd {
++	pinctrl-0 = <&canfd0_pins &canfd1_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++
++	channel0 {
++		status = "okay";
++	};
++
++	channel1 {
++		status = "okay";
++	};
++};
++
++&pfc {
++	pinctrl-0 = <&scif_clk_pins>;
++	pinctrl-names = "default";
++
++	avb_pins: avb {
++		mux {
++			groups = "avb_link", "avb_mdio", "avb_mii";
++			function = "avb";
++		};
++
++		pins_mdio {
++			groups = "avb_mdio";
++			drive-strength = <24>;
++		};
++
++		pins_mii_tx {
++			pins = "PIN_AVB_TX_CTL", "PIN_AVB_TXC", "PIN_AVB_TD0",
++			       "PIN_AVB_TD1", "PIN_AVB_TD2", "PIN_AVB_TD3";
++			drive-strength = <12>;
++		};
++	};
++
++	hscif0_pins: hscif0 {
++		groups = "hscif0_data", "hscif0_ctrl";
++		function = "hscif0";
++	};
++
++	hscif1_pins: hscif1 {
++		groups = "hscif1_data_a";
++		function = "hscif1";
++	};
++
++	hscif2_pins: hscif2 {
++		groups = "hscif2_data_c";
++		function = "hscif2";
++	};
++
++	i2c2_pins: i2c2 {
++		groups = "i2c2_a";
++		function = "i2c2";
++	};
++
++	i2c3_pins: i2c3 {
++		groups = "i2c3";
++		function = "i2c3";
++	};
++
++	i2c5_pins: i2c5 {
++		groups = "i2c5";
++		function = "i2c5";
++	};
++
++	irq0_pins: irq0 {
++		groups = "intc_ex_irq0";
++		function = "intc_ex";
++	};
++
++	scif1_pins: scif1 {
++		groups = "scif1_data_b";
++		function = "scif1";
++	};
++
++	scif2_pins: scif2 {
++		groups = "scif2_data_a";
++		function = "scif2";
++	};
++
++	scif5_pins: scif5 {
++		groups = "scif5_data_a";
++		function = "scif5";
++	};
++
++	scif_clk_pins: scif_clk {
++		groups = "scif_clk_a";
++		function = "scif_clk";
++	};
++
++	sdhi0_pins: sd0 {
++		groups = "sdhi0_data4", "sdhi0_ctrl";
++		function = "sdhi0";
++		power-source = <3300>;
++	};
++
++	sdhi0_pins_uhs: sd0_uhs {
++		groups = "sdhi0_data4", "sdhi0_ctrl";
++		function = "sdhi0";
++		power-source = <1800>;
++	};
++
++	sdhi2_pins: sd2 {
++		groups = "sdhi2_data8", "sdhi2_ctrl", "sdhi2_ds";
++		function = "sdhi2";
++		power-source = <3300>;
++	};
++
++	sdhi2_pins_uhs: sd2_uhs {
++		groups = "sdhi2_data8", "sdhi2_ctrl", "sdhi2_ds";
++		function = "sdhi2";
++		power-source = <1800>;
++	};
++
++	sdhi3_pins: sd3 {
++		groups = "sdhi3_data4", "sdhi3_ctrl";
++		function = "sdhi3";
++		power-source = <3300>;
++	};
++
++	sdhi3_pins_uhs: sd3_uhs {
++		groups = "sdhi3_data4", "sdhi3_ctrl";
++		function = "sdhi3";
++		power-source = <1800>;
++	};
++
++	sound_pins: sound {
++		groups = "ssi349_ctrl", "ssi3_data", "ssi4_data";
++		function = "ssi";
++	};
++
++	sound_clk_pins: sound_clk {
++		groups = "audio_clk_a_a", "audio_clk_b_a",
++			 "audio_clkout_a", "audio_clkout3_b";
++		function = "audio_clk";
++	};
++
++	usb0_pins: usb0 {
++		groups = "usb0";
++		function = "usb0";
++	};
++
++	usb1_pins: usb1 {
++		groups = "usb1_ovc";
++		function = "usb1";
++	};
++
++	usb30_pins: usb30 {
++		groups = "usb30", "usb30_ovc";
++		function = "usb30";
++	};
++
++	canfd0_pins: canfd0 {
++		groups = "canfd0_data_a";
++		function = "canfd0";
++	};
++
++	canfd1_pins: canfd1 {
++		groups = "canfd1_data";
++		function = "canfd1";
++	};
++};
++
++&rcar_sound {
++	pinctrl-0 = <&sound_pins &sound_clk_pins>;
++	pinctrl-names = "default";
++
++	/* Single DAI */
++	#sound-dai-cells = <0>;
++
++	/* audio_clkout0/1/2/3 */
++	#clock-cells = <1>;
++	clock-frequency = <12288000 11289600>;
++
++	status = "okay";
++
++	/* update <audio_clk_b> to <cs2000> */
++	clocks = <&cpg CPG_MOD 1005>,
++		 <&cpg CPG_MOD 1006>, <&cpg CPG_MOD 1007>,
++		 <&cpg CPG_MOD 1008>, <&cpg CPG_MOD 1009>,
++		 <&cpg CPG_MOD 1010>, <&cpg CPG_MOD 1011>,
++		 <&cpg CPG_MOD 1012>, <&cpg CPG_MOD 1013>,
++		 <&cpg CPG_MOD 1014>, <&cpg CPG_MOD 1015>,
++		 <&cpg CPG_MOD 1022>, <&cpg CPG_MOD 1023>,
++		 <&cpg CPG_MOD 1024>, <&cpg CPG_MOD 1025>,
++		 <&cpg CPG_MOD 1026>, <&cpg CPG_MOD 1027>,
++		 <&cpg CPG_MOD 1028>, <&cpg CPG_MOD 1029>,
++		 <&cpg CPG_MOD 1030>, <&cpg CPG_MOD 1031>,
++		 <&cpg CPG_MOD 1020>, <&cpg CPG_MOD 1021>,
++		 <&cpg CPG_MOD 1020>, <&cpg CPG_MOD 1021>,
++		 <&cpg CPG_MOD 1019>, <&cpg CPG_MOD 1018>,
++		 <&audio_clk_a>, <&cs2000>,
++		 <&audio_clk_c>,
++		 <&cpg CPG_CORE CPG_AUDIO_CLK_I>;
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		rsnd_port0: port@0 {
++			reg = <0>;
++			rsnd_endpoint0: endpoint {
++				remote-endpoint = <&ak4613_endpoint>;
++
++				dai-format = "left_j";
++				bitclock-master = <&rsnd_endpoint0>;
++				frame-master = <&rsnd_endpoint0>;
++
++				playback = <&ssi3>; //ssi0 -> ssi3
++				capture  = <&ssi4>; //ssi1 -> ssi4
++			};
++		};
++	};
++};
++
++&rwdt {
++	timeout-sec = <60>;
++	status = "okay";
++};
++
++&scif1 {
++	pinctrl-0 = <&scif1_pins>;
++	pinctrl-names = "default";
++
++	uart-has-rtscts;
++	/* Please use exclusively to the hscif1 node */
++	status = "okay";
++};
++
++&scif2 {
++	pinctrl-0 = <&scif2_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&scif5 {
++	pinctrl-0 = <&scif5_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&scif_clk {
++	clock-frequency = <14745600>;
++};
++
++&sdhi0 {
++	pinctrl-0 = <&sdhi0_pins>;
++	pinctrl-1 = <&sdhi0_pins_uhs>;
++	pinctrl-names = "default", "state_uhs";
++
++	vmmc-supply = <&vcc_sdhi0>;
++	vqmmc-supply = <&vccq_sdhi0>;
++	cd-gpios = <&gpio3 12 GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio3 13 GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++	sd-uhs-sdr50;
++	sd-uhs-sdr104;
++	status = "okay";
++};
++
++&sdhi2 {
++	/* used for on-board 8bit eMMC */
++	pinctrl-0 = <&sdhi2_pins>;
++	pinctrl-1 = <&sdhi2_pins_uhs>;
++	pinctrl-names = "default", "state_uhs";
++
++	iommus = <&ipmmu_ds1 34>;
++
++	vmmc-supply = <&reg_3p3v>;
++	vqmmc-supply = <&reg_1p8v>;
++	bus-width = <8>;
++	mmc-hs200-1_8v;
++	mmc-hs400-1_8v;
++	no-sd;
++	no-sdio;
++	non-removable;
++	fixed-emmc-driver-type = <1>;
++	status = "okay";
++};
++
++&sdhi3 {
++	pinctrl-0 = <&sdhi3_pins>;
++	pinctrl-1 = <&sdhi3_pins_uhs>;
++	pinctrl-names = "default", "state_uhs";
++
++	vmmc-supply = <&vcc_sdhi3>;
++	vqmmc-supply = <&vccq_sdhi3>;
++	cd-gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio4 16 GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++	sd-uhs-sdr50;
++	sd-uhs-sdr104;
++	status = "okay";
++};
++
++&ssi4 {
++	shared-pin;
++};
++
++&usb_extal_clk {
++	clock-frequency = <50000000>;
++};
++
++&usb2_phy0 {
++	pinctrl-0 = <&usb0_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&usb2_phy1 {
++	pinctrl-0 = <&usb1_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&usb3_peri0 {
++	phys = <&usb3_phy0>;
++	phy-names = "usb";
++
++	status = "okay";
++};
++
++&usb3_phy0 {
++	status = "okay";
++};
++
++&usb3s0_clk {
++	clock-frequency = <100000000>;
++};
++
++&vin0 {
++	status = "okay";
++};
++
++&vin1 {
++	status = "okay";
++};
++
++&vin2 {
++	status = "okay";
++};
++
++&vin3 {
++	status = "okay";
++};
++
++&vin4 {
++	status = "okay";
++};
++
++&vin5 {
++	status = "okay";
++};
++
++&vin6 {
++	status = "okay";
++};
++
++&vin7 {
++	status = "okay";
++};
++
++&xhci0 {
++	pinctrl-0 = <&usb30_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts b/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
+new file mode 100644
+index 000000000000..3d1107f6d9cc
+--- /dev/null
++++ b/arch/arm64/boot/dts/renesas/r8a77951-agl-refhw.dts
+@@ -0,0 +1,392 @@
++/*
++ * Device Tree Source for the AGL reference hardware board with R-Car H3 ES3.0
++ *
++ * Copyright (C) 2019 Panasonic Corp.
++ * Copyright (C) 2020 Konsulko Group
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++/*
++ * This file is for the most part derived from:
++ *
++ * - r8a77951-salvator-xs-4x2g.dts
++ * - r8a77951-salvator-xs.dts
++ * - salvator-xs.dtsi
++ *
++ * With agl-refhw-common.dtsi replacing (and derived from) salvator-common.dtsi.
++ */
++
++/dts-v1/;
++#include "r8a77951.dtsi"
++#include "agl-refhw-common.dtsi"
++
++/ {
++	model = "AGL Reference Hardware based on r8a77951 ES3.0+ with 8GiB (4 x 2 GiB)";
++	compatible = "agl,refhw-h3", "renesas,r8a7795";
++
++	memory@48000000 {
++		device_type = "memory";
++		/* first 128MB is reserved for secure area. */
++		reg = <0x0 0x48000000 0x0 0x78000000>;
++	};
++
++	memory@500000000 {
++		device_type = "memory";
++		reg = <0x5 0x00000000 0x0 0x80000000>;
++	};
++
++	memory@600000000 {
++		device_type = "memory";
++		reg = <0x6 0x00000000 0x0 0x80000000>;
++	};
++
++	memory@700000000 {
++		device_type = "memory";
++		reg = <0x7 0x00000000 0x0 0x80000000>;
++	};
++
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		/* device specific region for Lossy Decompression */
++		lossy_decompress: linux,lossy_decompress@54000000 {
++			no-map;
++			reg = <0x00000000 0x54000000 0x0 0x03000000>;
++		};
++
++		/* For Audio DSP */
++		adsp_reserved: linux,adsp@57000000 {
++			compatible = "shared-dma-pool";
++			reusable;
++			reg = <0x00000000 0x57000000 0x0 0x01000000>;
++		};
++
++		/* global autoconfigured region for contiguous allocations */
++		linux,cma@58000000 {
++			compatible = "shared-dma-pool";
++			reusable;
++			reg = <0x00000000 0x58000000 0x0 0x18000000>;
++			linux,cma-default;
++		};
++
++		/* device specific region for contiguous allocations */
++		mmp_reserved: linux,multimedia@70000000 {
++			compatible = "shared-dma-pool";
++			reusable;
++			reg = <0x00000000 0x70000000 0x0 0x10000000>;
++		};
++	};
++
++	mmngr {
++		compatible = "renesas,mmngr";
++		memory-region = <&mmp_reserved>, <&lossy_decompress>;
++	};
++
++	mmngrbuf {
++		compatible = "renesas,mmngrbuf";
++	};
++
++	vspm_if {
++		compatible = "renesas,vspm_if";
++	};
++
++	vga {
++		port {
++			vga_in: endpoint {
++				/delete-property/remote-endpoint;
++			};
++		};
++	};
++
++	vga-encoder {
++		ports {
++			port@0 {
++				adv7123_in: endpoint {
++					/delete-property/remote-endpoint;
++				};
++			};
++
++			port@1 {
++				adv7123_out: endpoint {
++					/delete-property/remote-endpoint;
++				};
++			};
++		};
++	};
++
++};
++
++&adsp {
++	status = "okay";
++	memory-region = <&adsp_reserved>;
++};
++
++&du {
++	clocks = <&cpg CPG_MOD 724>,
++		 <&cpg CPG_MOD 723>,
++		 <&cpg CPG_MOD 722>,
++		 <&cpg CPG_MOD 721>,
++		 <&versaclock6 1>,
++		 <&x21_clk>,
++		 <&x22_clk>,
++		 <&versaclock6 2>;
++	clock-names = "du.0", "du.1", "du.2", "du.3",
++		      "dclkin.0", "dclkin.1", "dclkin.2", "dclkin.3";
++};
++
++&ehci2 {
++	status = "okay";
++};
++
++&ehci3 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&hsusb3 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&sound_card {
++	dais = <&rsnd_port0	/* ak4613 */
++		&rsnd_port1	/* HDMI0  */
++		&rsnd_port2>;	/* HDMI1  */
++};
++
++&hdmi0 {
++	status = "okay";
++
++	ports {
++		port@1 {
++			reg = <1>;
++			rcar_dw_hdmi0_out: endpoint {
++				remote-endpoint = <&hdmi0_con>;
++			};
++		};
++		port@2 {
++			reg = <2>;
++			dw_hdmi0_snd_in: endpoint {
++				remote-endpoint = <&rsnd_endpoint1>;
++			};
++		};
++	};
++};
++
++&hdmi0_con {
++	remote-endpoint = <&rcar_dw_hdmi0_out>;
++};
++
++&hdmi1 {
++	status = "okay";
++
++	ports {
++		port@1 {
++			reg = <1>;
++			rcar_dw_hdmi1_out: endpoint {
++				remote-endpoint = <&hdmi1_con>;
++			};
++		};
++		port@2 {
++			reg = <2>;
++			dw_hdmi1_snd_in: endpoint {
++				remote-endpoint = <&rsnd_endpoint2>;
++			};
++		};
++	};
++};
++
++&hdmi1_con {
++	remote-endpoint = <&rcar_dw_hdmi1_out>;
++};
++
++&ohci2 {
++	status = "okay";
++};
++
++&ohci3 {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&rcar_sound {
++	ports {
++		/* rsnd_port0 is on salvator-common */
++		rsnd_port1: port@1 {
++			reg = <1>;
++			rsnd_endpoint1: endpoint {
++				remote-endpoint = <&dw_hdmi0_snd_in>;
++
++				dai-format = "i2s";
++				bitclock-master = <&rsnd_endpoint1>;
++				frame-master = <&rsnd_endpoint1>;
++
++				playback = <&ssi2>;
++			};
++		};
++		rsnd_port2: port@2 {
++			reg = <2>;
++			rsnd_endpoint2: endpoint {
++				remote-endpoint = <&dw_hdmi1_snd_in>;
++
++				dai-format = "i2s";
++				bitclock-master = <&rsnd_endpoint2>;
++				frame-master = <&rsnd_endpoint2>;
++
++				playback = <&ssi3>;
++			};
++		};
++	};
++};
++
++&pfc {
++	usb2_pins: usb2 {
++		groups = "usb2", "usb2_ovc";
++		function = "usb2";
++	};
++
++	/*
++	 * - On Salvator-X[S], GP6_3[01] are connected to ADV7482 as irq pins
++	 *   (when SW31 is the default setting on Salvator-XS).
++	 * - If SW31 is the default setting, you cannot use USB2.0 ch3 on
++	 *   r8a77951 with Salvator-XS.
++	 *   Hence the SW31 setting must be changed like 2) below.
++	 *   1) Default setting of SW31: ON-ON-OFF-OFF-OFF-OFF:
++	 *	- Connect GP6_3[01] to ADV7842.
++	 *   2) Changed setting of SW31: OFF-OFF-ON-ON-ON-ON:
++	 *	- Connect GP6_3[01] to BD082065 (USB2.0 ch3's host power).
++	 *	- Connect GP6_{04,21} to ADV7842.
++	 */
++	usb2_ch3_pins: usb2_ch3 {
++		groups = "usb2_ch3";
++		function = "usb2_ch3";
++	};
++};
++
++&usb2_phy2 {
++	pinctrl-0 = <&usb2_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&usb2_phy3 {
++	pinctrl-0 = <&usb2_ch3_pins>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&vspbc {
++	status = "okay";
++};
++
++&vspbd {
++	status = "okay";
++};
++
++&vspi0 {
++	status = "okay";
++};
++
++&vspi1 {
++	status = "okay";
++};
++
++/* End r8a77951-salvator-xs.dts content */
++
++
++/* Start r8a77951-salvator-xs-4x2g.dts content */
++
++&pciec0 {
++	/* Map all possible DDR as inbound ranges */
++	dma-ranges = <0x42000000 0 0x40000000 0 0x40000000 0 0x80000000>;
++};
++
++&pciec1 {
++	/* Map all possible DDR as inbound ranges */
++	dma-ranges = <0x42000000 0 0x40000000 0 0x40000000 0 0x80000000>;
++};
++
++/* End r8a77951-salvator-xs-4x2g.dts content */
++
++
++/* Start salvator-xs.dts content */
++
++&extal_clk {
++	clock-frequency = <16640000>;
++};
++
++&i2c4 {
++	clock-frequency = <400000>;
++
++	versaclock6: clock-generator@6a {
++		compatible = "idt,5p49v6901";
++		reg = <0x6a>;
++		#clock-cells = <1>;
++		clocks = <&x23_clk>;
++		clock-names = "xin";
++	};
++};
++
++/* End salvator-xs.dts content */
++
++
++/* Start reference hardware specific tweaks */
++
++&du {
++	ports {
++		port@0 {
++			endpoint {
++				/delete-property/remote-endpoint;
++			};
++		};
++
++		port@3 {
++			endpoint {
++				/delete-property/remote-endpoint;
++			};
++		};
++	};
++};
++
++&lvds0 {
++	status = "disabled";
++};
++
++&pwm1 {
++	status = "disabled";
++};
++
++&scif_clk {
++	clock-frequency = <0>;
++};
++
++&sdhi0 {
++	/delete-property/ wp-gpios;
++	non-removable;
++};
++
++&sdhi3 {
++	/delete-property/ wp-gpios;
++	non-removable;
++};
++
++&gpio6 {
++	/* Enable the CAN 1 & 2 transceivers */
++	can-1-transceiver-stb {
++		gpio-hog;
++		gpios = <21 GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++	can-2-transceiver-stb {
++		gpio-hog;
++		gpios = <12 GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
++};
+diff --git a/drivers/media/i2c/adv748x/adv748x-core.c b/drivers/media/i2c/adv748x/adv748x-core.c
+index fe156e8f88b8..da295b106561 100644
+--- a/drivers/media/i2c/adv748x/adv748x-core.c
++++ b/drivers/media/i2c/adv748x/adv748x-core.c
+@@ -97,6 +97,21 @@ static const struct adv748x_register_map adv748x_default_addresses[] = {
+ 	[ADV748X_PAGE_TXA] = { "txa", 0x4a },
+ };
+ 
++static const struct adv748x_register_map adv748x_default_addresses2[] = {
++	[ADV748X_PAGE_IO] = { "main", 0x71 },
++	[ADV748X_PAGE_DPLL] = { "dpll", 0x27 },
++	[ADV748X_PAGE_CP] = { "cp", 0x23 },
++	[ADV748X_PAGE_HDMI] = { "hdmi", 0x35 },
++	[ADV748X_PAGE_EDID] = { "edid", 0x37 },
++	[ADV748X_PAGE_REPEATER] = { "repeater", 0x33 },
++	[ADV748X_PAGE_INFOFRAME] = { "infoframe", 0x28 },
++	[ADV748X_PAGE_CBUS] = { "cbus", 0x29 },
++	[ADV748X_PAGE_CEC] = { "cec", 0x42 },
++	[ADV748X_PAGE_SDP] = { "sdp", 0x78 },
++	[ADV748X_PAGE_TXB] = { "txb", 0x49 },
++	[ADV748X_PAGE_TXA] = { "txa", 0x4b },
++};
++
+ static int adv748x_read_check(struct adv748x_state *state,
+ 			      int client_page, u8 reg)
+ {
+@@ -183,10 +198,17 @@ static int adv748x_initialise_clients(struct adv748x_state *state)
+ 	int ret;
+ 
+ 	for (i = ADV748X_PAGE_DPLL; i < ADV748X_PAGE_MAX; ++i) {
+-		state->i2c_clients[i] = i2c_new_ancillary_device(
++		if ((state->client->addr << 1) == 0xe0) {
++			state->i2c_clients[i] = i2c_new_ancillary_device(
+ 				state->client,
+ 				adv748x_default_addresses[i].name,
+ 				adv748x_default_addresses[i].default_addr);
++		} else {
++			state->i2c_clients[i] = i2c_new_ancillary_device(
++				state->client,
++				adv748x_default_addresses2[i].name,
++				adv748x_default_addresses2[i].default_addr);
++		}
+ 
+ 		if (IS_ERR(state->i2c_clients[i])) {
+ 			adv_err(state, "failed to create i2c client %u\n", i);
+-- 
+2.35.1
+

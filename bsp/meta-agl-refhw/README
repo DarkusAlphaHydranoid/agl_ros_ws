@@ -1,0 +1,84 @@
+This README file contains information on the contents of the meta-agl-refhw-gen3
+layer which provides support for the Renesas R-Car H3 based AGL reference
+hardware.
+
+Dependencies
+============
+
+This layer depends on:
+
+  URI: git://git.openembedded.org/openembedded-core
+  layers: meta
+  branch: scarthgap
+
+  URI: git://git.openembedded.org/meta-openembedded
+  layers: meta-oe, meta-python
+  branch: scarthgap
+
+  URI: https://github.com/renesas-rcar/meta-renesas
+  branch: scarthgap-dev
+
+
+Build Instructions
+==================
+
+  I. Building with the layer in the AGL environment
+ II. Build agl-demo-platform by using meta-agl-refhw-gen3
+III. Updating firmware
+ IV. Notes
+
+
+I. Adding the meta-agl-refhw-gen3 layer to your AGL environment
+===============================================================
+
+This layer has been integrated into the AGL build environment for the UCB 11.0
+(Kooky Koi) release, so manual integration is no longer required.  See section
+(II) below for how to build an image, and the "How to build the Firmware" section
+in the document meta-agl-refhw-gen3/docs/ReferenceHW_Rcar_gen3.md for how to
+configure a standalone build without AGL.
+
+
+II. Build for Reference Hardware
+================================
+
+You should follow the instructions in the "Building for Supported Renesas Boards"
+section on the AGL developer site to build images for the reference hardware.
+
+Use the "h3ulcb" machine and "agl-refhw-h3" feature when configuring, e.g.:
+
+	$ cd $AGL_TOP
+	$ source meta-agl/scripts/aglsetup.sh -m h3ulcb -b build \
+	  agl-refhw-h3 agl-demo agl-devel
+
+This works as the AGL reference hardware support activated by the "agl-refhw-h3"
+feature integrates on top of the "h3ulcb" (or "h3ulcb-nogfx") machine support in
+the AGL UCB tree.  Note that it has not been tested with the "h3ulcb-kf" machine.
+In the resulting build, the image can be used on the reference hardware by using
+the DTB file "r8a7795-agl-refhw.dtb".  In the reference hardware u-boot settings,
+this can be done with the following (in case of booting from the Micro SD card
+in SD#0):
+
+	=> setenv bootargs 'console=ttySC0,115200 root=/dev/mmcblk1p1 rootwait ro rootfstype=ext4'
+	=> setenv bootcmd 'run load_ker; run load_dtb; booti 0x48080000 - 0x48000000'
+	=> setenv load_dtb 'ext4load mmc 0:1 0x48000000 /boot/r8a7795-agl-refhw.dtb'
+	=> setenv load_ker 'ext4load mmc 0:1 0x48080000 /boot/Image'
+	=> saveenv
+	
+	=> printenv
+	...
+	bootargs=console=ttySC0,115200 root=/dev/mmcblk1p1 rootwait ro rootfstype=ext4
+	bootcmd=run load_ker; run load_dtb; booti 0x48080000 - 0x48000000
+	load_dtb=ext4load mmc 0:1 0x48000000 /boot/r8a7795-agl-refhw.dtb
+	load_ker=ext4load mmc 0:1 0x48080000 /boot/Image
+	..
+
+
+III. Updating firmware
+======================
+
+Please refer to meta-agl-refhw-gen3/docs/ReferenceHW_Rcar_gen3.md for details.
+
+
+IV. Notes
+=========
+1.  SD#1 is not supported.

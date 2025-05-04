@@ -1,0 +1,35 @@
+From 63158dbd1aba6c6451ab7085e78895cce96b4499 Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Mon, 14 Mar 2022 18:48:25 +0300
+Subject: [PATCH] media: rcar-vin: Fix YUV input V4L2_PIX_FMT_GREY format
+ support.
+
+In case of V4L2_PIX_FMT_GREY format and YUV input,
+there's no need to divide stride by two.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ drivers/media/platform/rcar-vin/rcar-dma.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/rcar-vin/rcar-dma.c b/drivers/media/platform/rcar-vin/rcar-dma.c
+index 3049c4b..d4db00b 100644
+--- a/drivers/media/platform/rcar-vin/rcar-dma.c
++++ b/drivers/media/platform/rcar-vin/rcar-dma.c
+@@ -747,9 +747,12 @@ static void rvin_crop_scale_comp(struct rvin_dev *vin)
+ 	case V4L2_PIX_FMT_SGBRG8:
+ 	case V4L2_PIX_FMT_SGRBG8:
+ 	case V4L2_PIX_FMT_SRGGB8:
+-	case V4L2_PIX_FMT_GREY:
+ 		stride /= 2;
+ 		break;
++	case V4L2_PIX_FMT_GREY:
++		if (vin->mbus_code == MEDIA_BUS_FMT_Y8_1X8)
++			stride /= 2;
++		break;
+ 	default:
+ 		break;
+ 	}
+-- 
+2.7.4
+

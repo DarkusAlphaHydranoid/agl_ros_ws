@@ -1,0 +1,129 @@
+From 446e06cbd366871cd94e84db2d5a989726aa730f Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Thu, 8 Oct 2020 22:30:16 +0300
+Subject: [PATCH] Fix gcc 9.3.0 compiler warnings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This fixes a bunch of compiler warnings:
+  * ignoring return value of ‘ssize_t read(int, void*, size_t)’,
+    declared with attribute warn_unused_result [-Wunused-result]
+  * comparison of integer expressions of different signedness: ‘int’ and
+    ‘const size_t’ {aka ‘const long unsigned int’} [-Wsign-compare]
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ reader.cpp |  8 +++++++-
+ write.cpp  | 22 +++++++++++-----------
+ 2 files changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/reader.cpp b/reader.cpp
+index e1a26e3..37fb3d3 100644
+--- a/reader.cpp
++++ b/reader.cpp
+@@ -82,6 +82,8 @@ static void *tog_func(void *ign)
+ #endif
+ 
+ 	while (tog_on) {
++		int ret;
++
+ #if defined( WITH_INOTIFY )
+ 		inotify_event iev;
+ 		if (read(inf_fd, &iev, sizeof(iev)) != (ssize_t)sizeof(iev)) {
+@@ -99,8 +101,12 @@ static void *tog_func(void *ign)
+ 			break;
+ 		}
+ 		memset(dat, 0, sizeof(dat));
+-		read(tfd, dat, sizeof(dat));
++		ret = read(tfd, dat, sizeof(dat));
+ 		close(tfd);
++		if (ret < 0) {
++			fprintf(stderr, "Failed to read '%s', %d\n", toggle_file, errno);
++			break;
++		}
+ 		dat[sizeof(dat)-1] = 0;
+ 		bool r = !!atoi(dat);
+ 		if (on != r) {
+diff --git a/write.cpp b/write.cpp
+index 67ce412..582d854 100644
+--- a/write.cpp
++++ b/write.cpp
+@@ -110,7 +110,7 @@ int spawn_device_new(int sock_con)
+ {
+ 	int e;
+ 	int fd;
+-	int i;
++	size_t i;
+ 	ssize_t si;
+ 	struct uinput_user_dev dev;
+ 	struct input_event ev;
+@@ -126,7 +126,7 @@ int spawn_device_new(int sock_con)
+ 		return 1;
+ 	}
+ 
+-	read(sock_con, (char*)&strsz, sizeof(strsz));
++	si = read(sock_con, (char*)&strsz, sizeof(strsz));
+ 	strsz = ntohs(strsz);
+ 	if (strsz != sizeof(uinput_user_dev)) {
+ 		fprintf(stderr, "Device information field sizes do not match (%d != %d). Sorry.\n",
+@@ -135,15 +135,15 @@ int spawn_device_new(int sock_con)
+ 	}
+ 
+ 	memset(&dev, 0, sizeof(dev));
+-	read(sock_con, dev.name, sizeof(dev.name));
+-	read(sock_con, &dev.id, sizeof(dev.id));
++	si = read(sock_con, dev.name, sizeof(dev.name));
++	si = read(sock_con, &dev.id, sizeof(dev.id));
+ 	
+-	read(sock_con, input_bits, sizeof(input_bits));
++	si = read(sock_con, input_bits, sizeof(input_bits));
+ 	for (i = 0; i < EV_MAX; ++i) {
+ 		if (!testbit(input_bits, i))
+ 			continue;
+ 		if (ioctl(fd, UI_SET_EVBIT, i) == -1) {
+-			fprintf(stderr, "Failed to set evbit %d, %d\n", i, errno);
++			fprintf(stderr, "Failed to set evbit %li, %d\n", i, errno);
+ 			goto error;
+ 		}
+ 	}
+@@ -153,11 +153,11 @@ int spawn_device_new(int sock_con)
+ 	if (testbit(input_bits, EV_##REL)) { \
+ 		unsigned char bits##rel[1+REL_MAX/8]; \
+ 		fprintf(stderr, "Reading " #rel "-bits\n"); \
+-		read(sock_con, (char*)bits##rel, sizeof(bits##rel)); \
++		si = read(sock_con, (char*)bits##rel, sizeof(bits##rel)); \
+ 		for (i = 0; i < REL_MAX; ++i) { \
+ 			if (!testbit(bits##rel, i)) continue; \
+ 			if (ioctl(fd, UI_SET_##RELBIT, i) == -1) { \
+-				fprintf(stderr, "Failed to set " #rel "-bit: %d, %d\n", i, errno); \
++				fprintf(stderr, "Failed to set " #rel "-bit: %li, %d\n", i, errno); \
+ 				goto err_close; \
+ 			} \
+ 		} \
+@@ -176,11 +176,11 @@ int spawn_device_new(int sock_con)
+ 	if (testbit(input_bits, EV_##KEY)) { \
+ 		unsigned char bits##key[1+KEY_MAX/8]; \
+ 		fprintf(stderr, "Reading " #key "-data\n"); \
+-		read(sock_con, (char*)bits##key, sizeof(bits##key)); \
++		si = read(sock_con, (char*)bits##key, sizeof(bits##key)); \
+ 		for (i = 0; i < KEY_MAX; ++i) { \
+ 			if (!testbit(bits##key, i)) continue; \
+ 			if (ioctl(fd, UI_SET_##KEYBIT, i) == -1) { \
+-				fprintf(stderr, "Failed to activate " #key "-bit: %d, %d\n", i, errno); \
++				fprintf(stderr, "Failed to activate " #key "-bit: %li, %d\n", i, errno); \
+ 				goto err_close; \
+ 			} \
+ 		} \
+@@ -194,7 +194,7 @@ int spawn_device_new(int sock_con)
+ 	if (testbit(input_bits, EV_ABS)) {
+ 		struct input_absinfo ai;
+ 		for (i = 0; i < ABS_MAX; ++i) {
+-			read(sock_con, (char*)&ai, sizeof(ai));
++			si = read(sock_con, (char*)&ai, sizeof(ai));
+ 			dev.absmin[i] = ai.minimum;
+ 			dev.absmax[i] = ai.maximum;
+ 		}
+-- 
+2.7.4
+

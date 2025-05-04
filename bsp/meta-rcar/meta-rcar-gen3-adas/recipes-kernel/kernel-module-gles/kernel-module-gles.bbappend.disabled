@@ -1,0 +1,5 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+
+SRC_URI:append:r8a7795 = " \
+    file://clockfreq-fix-out-of-bounds-access.patch \
+"

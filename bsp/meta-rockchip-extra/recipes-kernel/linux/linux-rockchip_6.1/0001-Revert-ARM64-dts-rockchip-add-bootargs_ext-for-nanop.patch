@@ -1,0 +1,38 @@
+From a347e5adb1999b0641a7389411aff0ec0f2909c7 Mon Sep 17 00:00:00 2001
+From: Naoto Yamaguchi <naoto.yamaguchi@aisin.co.jp>
+Date: Sun, 26 Jan 2025 23:32:34 +0900
+Subject: [PATCH] Revert "ARM64: dts: rockchip: add bootargs_ext for nanopi5/6"
+
+This reverts commit e7c28e5cc40aebf9eb955dd49ca706a6a4424a7a.
+---
+ arch/arm64/boot/dts/rockchip/rk3568-nanopi5-common.dtsi | 1 -
+ arch/arm64/boot/dts/rockchip/rk3588-nanopi6-common.dtsi | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3568-nanopi5-common.dtsi b/arch/arm64/boot/dts/rockchip/rk3568-nanopi5-common.dtsi
+index cb74a1607d54..d92d197511dc 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3568-nanopi5-common.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3568-nanopi5-common.dtsi
+@@ -21,7 +21,6 @@ / {
+ 
+ 	chosen: chosen {
+ 		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFIQ0 coherent_pool=1m";
+-		bootargs_ext = "root=/dev/mmcblk2p8 rw rootfstype=ext4 rootflags=discard";
+ 	};
+ 
+ 	aliases {
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-nanopi6-common.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-nanopi6-common.dtsi
+index fc2d035c772e..61e5d9e051cf 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588-nanopi6-common.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3588-nanopi6-common.dtsi
+@@ -31,7 +31,6 @@ aliases {
+ 
+ 	chosen: chosen {
+ 		bootargs = "earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0 coherent_pool=1m irqchip.gicv3_pseudo_nmi=0";
+-		bootargs_ext = "root=/dev/mmcblk2p8 rw rootfstype=ext4 rootflags=discard";
+ 	};
+ 
+ 	hdmi0_sound: hdmi0-sound {
+-- 
+2.43.0
+

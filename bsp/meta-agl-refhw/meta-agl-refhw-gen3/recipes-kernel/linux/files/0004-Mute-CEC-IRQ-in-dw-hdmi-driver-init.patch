@@ -1,0 +1,33 @@
+From 23cc66769400cc94c6baad7be66475ff004da3cc Mon Sep 17 00:00:00 2001
+From: invalid_git config <unknown@unknown>
+Date: Tue, 26 Oct 2021 21:15:42 +0000
+Subject: [PATCH 4/4] Mute CEC IRQ in dw-hdmi driver init
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add muting of the CEC interrupt to initialize_hdmi_rcar_ih_mutes,
+which it previously did not have, unlike the original generic
+initialize_hdmi_ih_mutes function.
+
+Author: Kato Kazuomi (加藤 一臣) <kato.kazuomi@jp.panasonic.com>
+Signed-off-by: Scott Murray <scott.murray@konsulko.com>
+---
+ drivers/gpu/drm/bridge/synopsys/dw-hdmi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
+index e856bffa4f70..dd31ebeb8ddf 100644
+--- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
++++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
+@@ -2329,6 +2329,7 @@ static void initialize_hdmi_rcar_ih_mutes(struct dw_hdmi *hdmi)
+ 	hdmi_writeb(hdmi, 0x1f, HDMI_IH_MUTE_AS_STAT0);
+ 	hdmi_writeb(hdmi, 0x3f, HDMI_IH_MUTE_PHY_STAT0);
+ 	hdmi_writeb(hdmi, 0x03, HDMI_IH_MUTE_I2CM_STAT0);
++	hdmi_writeb(hdmi, 0x7f, HDMI_IH_MUTE_CEC_STAT0);
+ 	hdmi_writeb(hdmi, 0x0f, HDMI_IH_MUTE_VP_STAT0);
+ 	hdmi_writeb(hdmi, 0x03, HDMI_IH_MUTE_I2CMPHY_STAT0);
+ 
+-- 
+2.31.1
+

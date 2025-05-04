@@ -1,0 +1,106 @@
+From 0acc6fd345dad07e06265a95e414c1904961b4cf Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Fri, 21 May 2021 16:36:11 +0300
+Subject: [PATCH 01/19] configs: rcar-gen3: Enable askenv command
+
+This enables "askenv" command for R-Car Gen3 boards
+which can be used in U-Boot scripts for user input.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ configs/r8a77970_eagle_defconfig   | 1 +
+ configs/r8a77980_condor_defconfig  | 1 +
+ configs/r8a77990_ebisu_defconfig   | 1 +
+ configs/r8a77995_draak_defconfig   | 1 +
+ configs/r8a779a0_falcon_defconfig  | 1 +
+ configs/rcar3_salvator-x_defconfig | 1 +
+ configs/rcar3_ulcb_defconfig       | 1 +
+ 7 files changed, 7 insertions(+)
+
+diff --git a/configs/r8a77970_eagle_defconfig b/configs/r8a77970_eagle_defconfig
+index 7bb2b1c..785f82c 100644
+--- a/configs/r8a77970_eagle_defconfig
++++ b/configs/r8a77970_eagle_defconfig
+@@ -20,6 +20,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77970-eagle.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_SPI=y
+diff --git a/configs/r8a77980_condor_defconfig b/configs/r8a77980_condor_defconfig
+index 6e04d90..65002c9 100644
+--- a/configs/r8a77980_condor_defconfig
++++ b/configs/r8a77980_condor_defconfig
+@@ -20,6 +20,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77980-condor.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_DFU=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+diff --git a/configs/r8a77990_ebisu_defconfig b/configs/r8a77990_ebisu_defconfig
+index a32262c..f9c3b68 100644
+--- a/configs/r8a77990_ebisu_defconfig
++++ b/configs/r8a77990_ebisu_defconfig
+@@ -19,6 +19,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77990-ebisu.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+diff --git a/configs/r8a77995_draak_defconfig b/configs/r8a77995_draak_defconfig
+index 00c6937..8ef6c6e 100644
+--- a/configs/r8a77995_draak_defconfig
++++ b/configs/r8a77995_draak_defconfig
+@@ -19,6 +19,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77995-draak.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+diff --git a/configs/r8a779a0_falcon_defconfig b/configs/r8a779a0_falcon_defconfig
+index 8df647a..5917503 100644
+--- a/configs/r8a779a0_falcon_defconfig
++++ b/configs/r8a779a0_falcon_defconfig
+@@ -19,6 +19,7 @@ CONFIG_BOOTARGS="root=/dev/nfs rw nfsroot=192.168.0.1:/export/rfs ip=192.168.0.2
+ CONFIG_DEFAULT_FDT_FILE="r8a779a0-falcon.dtb"
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+diff --git a/configs/rcar3_salvator-x_defconfig b/configs/rcar3_salvator-x_defconfig
+index fc6788ad..d81c8ce 100644
+--- a/configs/rcar3_salvator-x_defconfig
++++ b/configs/rcar3_salvator-x_defconfig
+@@ -18,6 +18,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77951-salvator-x.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+diff --git a/configs/rcar3_ulcb_defconfig b/configs/rcar3_ulcb_defconfig
+index 97fae23..9f7d05d 100644
+--- a/configs/rcar3_ulcb_defconfig
++++ b/configs/rcar3_ulcb_defconfig
+@@ -19,6 +19,7 @@ CONFIG_DEFAULT_FDT_FILE="r8a77950-ulcb.dtb"
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_HUSH_PARSER=y
+ CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_ASKENV=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+-- 
+2.7.4
+

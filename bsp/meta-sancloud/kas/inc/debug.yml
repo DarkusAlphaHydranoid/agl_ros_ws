@@ -1,0 +1,18 @@
+# Copyright (C) 2020-2022 SanCloud Ltd
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 9
+
+local_conf_header:
+  debug_tools: |
+    CORE_IMAGE_EXTRA_INSTALL += " \
+        lsof pstree util-linux vim strace python3 bash devmem2 flashrom \
+        htop iotop iftop \
+        rsync iperf3 tcpdump netcat \
+        ${@bb.utils.contains('DISTRO', 'arago', '', 'openssh', d)} \
+        "
+    IMAGE_ROOTFS_SIZE = "4000000"
+    IMAGE_ROOTFS_EXTRA_SIZE = "0"
+    IMAGE_OVERHEAD_FACTOR = "1.0"
+    INHERIT += "image-buildinfo"

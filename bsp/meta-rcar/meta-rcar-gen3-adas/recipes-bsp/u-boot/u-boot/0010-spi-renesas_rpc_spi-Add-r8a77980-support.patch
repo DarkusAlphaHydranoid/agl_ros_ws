@@ -1,0 +1,27 @@
+From 4a58ad6c189e7c5e97bd5621b5954d444152ddbb Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Fri, 18 Sep 2020 15:04:44 +0300
+Subject: [PATCH 10/22] spi: renesas_rpc_spi: Add r8a77980 support
+
+This adds "renesas,rpc-r8a77980" to the compatible device list.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ drivers/spi/renesas_rpc_spi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/spi/renesas_rpc_spi.c b/drivers/spi/renesas_rpc_spi.c
+index 3ea59b8..f99fe04 100644
+--- a/drivers/spi/renesas_rpc_spi.c
++++ b/drivers/spi/renesas_rpc_spi.c
+@@ -452,6 +452,7 @@ static const struct udevice_id rpc_spi_ids[] = {
+ 	{ .compatible = "renesas,rpc-r8a7796" },
+ 	{ .compatible = "renesas,rpc-r8a77965" },
+ 	{ .compatible = "renesas,rpc-r8a77970" },
++	{ .compatible = "renesas,rpc-r8a77980" },
+ 	{ .compatible = "renesas,rpc-r8a77995" },
+ 	{ .compatible = "renesas,rpc-r7s72100" },
+ 	{ }
+-- 
+2.7.4
+

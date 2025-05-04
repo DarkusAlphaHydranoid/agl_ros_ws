@@ -1,0 +1,38 @@
+From 238f00f6b3556e347bebd5fe650f71b41047ac3e Mon Sep 17 00:00:00 2001
+From: Valentine Barshak <valentine.barshak@cogentembedded.com>
+Date: Wed, 10 Feb 2021 20:27:10 +0300
+Subject: [PATCH 3/4] drivers: renesas: io_memdrv: Invalidate cache before
+ executing the DMA
+
+This invalidates destination buffer cache before calling dma_exec.
+The cache is flushed after loading the image which may cause image
+corruption if the DMA is used with there stale data in the cache.
+
+Signed-off-by: Valentine Barshak <valentine.barshak@cogentembedded.com>
+---
+ drivers/renesas/common/io/io_memdrv.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/renesas/common/io/io_memdrv.c b/drivers/renesas/common/io/io_memdrv.c
+index 1f31c0f..4732a68 100644
+--- a/drivers/renesas/common/io/io_memdrv.c
++++ b/drivers/renesas/common/io/io_memdrv.c
+@@ -6,6 +6,7 @@
+ 
+ #include <string.h>
+ 
++#include <arch_helpers.h>
+ #include <common/debug.h>
+ #include <drivers/io/io_driver.h>
+ #include <drivers/io/io_storage.h>
+@@ -91,6 +92,7 @@ static int32_t memdrv_block_read(io_entity_t *entity, uintptr_t buffer,
+ 		return IO_FAIL;
+ 	}
+ 
++	inv_dcache_range(buffer, length);
+ 	rcar_dma_exec(buffer, fp->base + (uintptr_t)fp->file_pos, length);
+ 	fp->file_pos += (signed long long)length;
+ 	*cnt = length;
+-- 
+2.7.4
+

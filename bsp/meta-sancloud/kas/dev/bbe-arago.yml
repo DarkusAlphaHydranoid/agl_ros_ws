@@ -1,0 +1,39 @@
+# Copyright (C) 2020-2022 SanCloud Ltd
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 9
+  includes:
+    - bbe-poky.yml
+
+distro: arago
+target:
+  - tisdk-default-image
+  - tisdk-base-image
+
+repos:
+  meta-arago:
+    url: https://git.yoctoproject.org/git/meta-arago
+    refspec: 382ca36beb21a524de726bfd1c57e3d26f10cf82   # 08.02.00.006
+    path: layers/meta-arago
+    layers:
+      meta-arago-distro:
+      meta-arago-extras:
+  meta-qt5:
+    url: https://github.com/meta-qt5/meta-qt5.git
+    path: layers/meta-qt5
+  meta-arm:
+    layers:
+      meta-arm-toolchain:
+  meta-virtualization:
+    url: https://git.yoctoproject.org/git/meta-virtualization
+    refspec: c4f156fa93b37b2428e09ae22dbd7f5875606f4d
+    path: layers/meta-virtualization
+  meta-openembedded:
+    layers:
+      meta-filesystems:
+
+local_conf_header:
+  arago: |
+    PACKAGE_CLASSES = "package_ipk"
+    TCMODEAPPEND = ""

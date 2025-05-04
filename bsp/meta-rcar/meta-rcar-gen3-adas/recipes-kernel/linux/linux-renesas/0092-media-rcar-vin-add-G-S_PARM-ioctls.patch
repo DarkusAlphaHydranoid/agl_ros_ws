@@ -1,0 +1,63 @@
+From 34b89222a9882e921e43d0152a6761cbe9bae080 Mon Sep 17 00:00:00 2001
+From: Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Date: Fri, 24 Sep 2021 14:51:38 +0100
+Subject: [PATCH 37/76] media: rcar-vin: add G/S_PARM ioctls
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream commit cd0e5e8c4281375f1aa94ff5fabe02963b025a71.
+
+This adds g/s_parm ioctls for parallel interface.
+
+Signed-off-by: Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Signed-off-by: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ drivers/media/platform/rcar-vin/rcar-v4l2.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/media/platform/rcar-vin/rcar-v4l2.c b/drivers/media/platform/rcar-vin/rcar-v4l2.c
+index 832cb89..65bb24c 100644
+--- a/drivers/media/platform/rcar-vin/rcar-v4l2.c
++++ b/drivers/media/platform/rcar-vin/rcar-v4l2.c
+@@ -624,6 +624,24 @@ static int rvin_s_selection(struct file *file, void *fh,
+ 	return 0;
+ }
+ 
++static int rvin_g_parm(struct file *file, void *priv,
++		       struct v4l2_streamparm *parm)
++{
++	struct rvin_dev *vin = video_drvdata(file);
++	struct v4l2_subdev *sd = vin_to_source(vin);
++
++	return v4l2_g_parm_cap(&vin->vdev, sd, parm);
++}
++
++static int rvin_s_parm(struct file *file, void *priv,
++		       struct v4l2_streamparm *parm)
++{
++	struct rvin_dev *vin = video_drvdata(file);
++	struct v4l2_subdev *sd = vin_to_source(vin);
++
++	return v4l2_s_parm_cap(&vin->vdev, sd, parm);
++}
++
+ static int rvin_g_pixelaspect(struct file *file, void *priv,
+ 			      int type, struct v4l2_fract *f)
+ {
+@@ -840,6 +858,9 @@ static const struct v4l2_ioctl_ops rvin_ioctl_ops = {
+ 	.vidioc_g_selection		= rvin_g_selection,
+ 	.vidioc_s_selection		= rvin_s_selection,
+ 
++	.vidioc_g_parm			= rvin_g_parm,
++	.vidioc_s_parm			= rvin_s_parm,
++
+ 	.vidioc_g_pixelaspect		= rvin_g_pixelaspect,
+ 
+ 	.vidioc_enum_input		= rvin_enum_input,
+-- 
+2.7.4
+

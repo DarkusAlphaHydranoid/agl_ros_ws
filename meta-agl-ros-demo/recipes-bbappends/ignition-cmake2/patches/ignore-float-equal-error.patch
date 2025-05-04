@@ -1,0 +1,13 @@
+diff --git a/cmake/IgnSetCompilerFlags.cmake b/cmake/IgnSetCompilerFlags.cmake
+index acb72c2..5e0ef42 100644
+--- a/cmake/IgnSetCompilerFlags.cmake
++++ b/cmake/IgnSetCompilerFlags.cmake
+@@ -126,7 +126,7 @@ macro(ign_setup_gcc_or_clang)
+ 
+   ign_filter_valid_compiler_options(
+     CUSTOM_ALL_FLAGS
+-        -Wall -Wextra -Wno-long-long -Wno-unused-value -Wfloat-equal
++        -Wall -Wextra -Wno-long-long -Wno-unused-value -Wno-float-equal
+         -Wshadow -Winit-self -Wswitch-default -Wmissing-include-dirs -pedantic
+         )
+ 

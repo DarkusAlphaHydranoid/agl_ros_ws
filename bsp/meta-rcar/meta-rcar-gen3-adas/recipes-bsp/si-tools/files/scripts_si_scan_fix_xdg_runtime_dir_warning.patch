@@ -1,0 +1,16 @@
+scripts: si_scan: Fix XDG_RUNTIME_DIR warning
+
+Try to start gstreams as the XDG_RUNTUME_DIR owner
+in case XDG_RUNTIME_DIR is not owned by the user.
+
+--- a/scripts/si_scan	2018-03-13 22:26:40.000000000 -0700
++++ b/scripts/si_scan	2024-08-14 04:44:20.192147344 -0700
+@@ -5,5 +5,7 @@ SI_ARGS="/dev/i2c-12 0x65"
+ set -o pipefail
+ if si_ctl $SI_ARGS -l "$1" | grep Frequency > /run/radio.frequency; then
+ 	export LD_LIBRARY_PATH=/usr/local/lib
+-	exec gst-launch-1.0 pulsesrc device=radio ! queue ! audioconvert ! audioresample ! audio/x-raw,rate=48000 ! pulsesink sync=false
++	gst="gst-launch-1.0 pulsesrc device=radio ! queue ! audioconvert ! audioresample ! audio/x-raw,rate=48000 ! pulsesink sync=false"
++	# Start gst as the XDG_RUNTIME_DIR owner to avoid "XDG_RUNTIME_DIR is not owned by us" warning
++	usr=`id -u` && xdg=`stat -c %u $XDG_RUNTIME_DIR` && [ "$usr" != "$xdg" ] && exec su `id -nu $xdg` -c "$gst" || exec $gst
+ fi

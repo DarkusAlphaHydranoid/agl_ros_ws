@@ -1,0 +1,30 @@
+diff --git a/RenderSystems/GLSupport/src/GLX/OgreGLXWindow.cpp b/RenderSystems/GLSupport/src/GLX/OgreGLXWindow.cpp
+index e971ceaa1..48be3fd0f 100644
+--- a/RenderSystems/GLSupport/src/GLX/OgreGLXWindow.cpp
++++ b/RenderSystems/GLSupport/src/GLX/OgreGLXWindow.cpp
+@@ -47,6 +47,8 @@
+ 
+ #include "OgreGLRenderSystemCommon.h"
+ 
++#include <iostream>
++
+ namespace {
+     int safeXErrorHandler (Display *display, XErrorEvent *event)
+     {
+@@ -243,6 +245,7 @@ namespace Ogre
+             if (! XGetWindowAttributes(xDisplay, parentWindow, &windowAttrib) ||
+                 windowAttrib.root != DefaultRootWindow(xDisplay))
+             {
++		std::cout << "BOMBARDINO CROCODIIILOOO : " << XGetWindowAttributes(xDisplay, parentWindow, &windowAttrib) << " | " << windowAttrib.root << " | " << DefaultRootWindow(xDisplay) << std::endl;
+                 OGRE_EXCEPT(Exception::ERR_RENDERINGAPI_ERROR, "Invalid parentWindowHandle (wrong server or screen)", "GLXWindow::create");
+             }
+         }
+@@ -256,7 +259,7 @@ namespace Ogre
+             if (! XGetWindowAttributes(xDisplay, externalWindow, &windowAttrib) ||
+                 windowAttrib.root != DefaultRootWindow(xDisplay))
+             {
+-                OGRE_EXCEPT(Exception::ERR_RENDERINGAPI_ERROR, "Invalid externalWindowHandle (wrong server or screen)", "GLXWindow::create");
++		OGRE_EXCEPT(Exception::ERR_RENDERINGAPI_ERROR, "Invalid externalWindowHandle (wrong server or screen)", "GLXWindow::create");
+             }
+             glxDrawable = externalWindow;
+         }

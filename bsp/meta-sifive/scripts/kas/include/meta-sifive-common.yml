@@ -1,0 +1,36 @@
+header:
+  version: 11
+
+build_system: oe
+
+repos:
+
+  bitbake:
+    url: https://git.openembedded.org/bitbake
+    refspec: 0a33b560233b983456178541603ab96fea22238b
+    layers:
+      .: excluded
+
+  openembedded-core:
+    url: https://git.openembedded.org/openembedded-core
+    refspec: 803cc32e72b4fc2fc28d92090e61f5dd288a10cb
+    layers:
+      meta:
+
+  meta-sifive:
+
+distro: nodistro
+
+local_conf_header:
+  meta-sifive-common: |
+    USER_CLASSES:append = " buildhistory buildstats buildstats-summary"
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+    INHERIT:append = " rm_work"
+    RM_OLD_IMAGE = "1"
+
+  qemu-native: |
+    PACKAGECONFIG:append:pn-qemu-system-native = " sdl"
+    PACKAGECONFIG:append:pn-nativesdk-qemu = " sdl"
+
+  sdk: |
+    CONF_VERSION = "2"
